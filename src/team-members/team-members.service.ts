@@ -17,7 +17,7 @@ export class TeamMembersService {
     try {
       const hashedPassword = await this.hashService.hash(createTeamMemberDto.password);
 
-      return await this.prisma.teamMembers.create({
+      return await this.prisma.team.create({
         data: {
           ...createTeamMemberDto,
           password: hashedPassword,
@@ -44,7 +44,7 @@ export class TeamMembersService {
 
   async findAll(skip: number = 0, take: number = 10) {
     try {
-      return await this.prisma.teamMembers.findMany({
+      return await this.prisma.team.findMany({
         skip,
         take,
         select: {
@@ -64,7 +64,7 @@ export class TeamMembersService {
 
   async findOne(id: string) {
     try {
-      const teamMember = await this.prisma.teamMembers.findUnique({
+      const teamMember = await this.prisma.team.findUnique({
         where: { id },
         select: {
           id: true,
@@ -92,7 +92,7 @@ export class TeamMembersService {
 
   async update(id: string, updateTeamMemberDto: UpdateTeamMemberDto) {
     try {
-      return await this.prisma.teamMembers.update({
+      return await this.prisma.team.update({
         where: { id },
         data: updateTeamMemberDto,
         select: {
@@ -120,7 +120,7 @@ export class TeamMembersService {
 
   async remove(id: string) {
     try {
-      return await this.prisma.teamMembers.delete({
+      return await this.prisma.team.delete({
         where: { id },
         select: {
           id: true,

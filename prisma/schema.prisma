@@ -38,3 +38,15 @@ enum Role {
   COLLABORATOR
   CLIENT
 }
+
+model Product {
+  id            String   @id @default(uuid())
+  title         String
+  description   String?
+  price         Float
+  discountPrice Float?
+  specs         Json?
+  quantity      Int      @default(0)
+  imgUrls       Json?
+  createdAt     DateTime @default(now())
+}

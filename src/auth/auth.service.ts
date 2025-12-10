@@ -47,7 +47,7 @@ export class AuthService {
     }
 
     async loginTeamMember(email: string, password: string) {
-        const teamMember = await this.prisma.teamMembers.findUnique({
+        const teamMember = await this.prisma.team.findUnique({
             where: { email }
         });
 
