@@ -6,6 +6,14 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('❌ JWT_SECRET environment variable is required! Please check your .env file.');
+  }
+
+  if (!process.env.DATABASE_URL) {
+    throw new Error('❌ DATABASE_URL environment variable is required! Please check your .env file.');
+  }
+
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(new ValidationPipe({
@@ -18,6 +26,17 @@ async function bootstrap() {
     .setTitle('Loja Backend API')
     .setDescription('API documentation for Loja Backend')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

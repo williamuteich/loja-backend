@@ -4,16 +4,23 @@ import { UpdateClientDto } from './dto/update-client.dto';
 import { PrismaService } from '../database/prisma.service';
 import { Role } from '@prisma/client';
 import { Prisma } from '@prisma/client';
+import { IHashService } from '../common/interfaces/IHashService';
 
 @Injectable()
 export class ClientService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly hashService: IHashService,
+    ) { }
 
     async create(createClientDto: CreateClientDto) {
         try {
+            const hashedPassword = await this.hashService.hash(createClientDto.password);
+
             return await this.prisma.client.create({
                 data: {
                     ...createClientDto,
+                    password: hashedPassword,
                     role: Role.CLIENT,
                 },
                 select: {

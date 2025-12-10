@@ -2,19 +2,25 @@ import { Injectable, NotFoundException, ConflictException, InternalServerErrorEx
 import { CreateTeamMemberDto } from './dto/create-team-member.dto';
 import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { PrismaService } from '../database/prisma.service';
-import { Role } from '@prisma/client';
 import { Prisma } from '@prisma/client';
+import { IHashService } from '../common/interfaces/IHashService';
 
 @Injectable()
 export class TeamMembersService {
 
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly hashService: IHashService,
+  ) { }
 
   async create(createTeamMemberDto: CreateTeamMemberDto) {
     try {
+      const hashedPassword = await this.hashService.hash(createTeamMemberDto.password);
+
       return await this.prisma.teamMembers.create({
         data: {
           ...createTeamMemberDto,
+          password: hashedPassword,
         },
         select: {
           id: true,

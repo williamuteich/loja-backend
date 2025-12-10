@@ -1,10 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { ClientController } from './client.controller';
-import { PrismaService } from '../database/prisma.service';
+import { BcryptHashService } from '../common/services/hash/bcrypt-hash.service';
+import { IHashService } from '../common/interfaces/IHashService';
 
 @Module({
     controllers: [ClientController],
-    providers: [ClientService, PrismaService],
+    providers: [
+        ClientService,
+        {
+            provide: IHashService,
+            useClass: BcryptHashService,
+        },
+    ],
+    exports: [ClientService]
 })
 export class ClientModule { }
