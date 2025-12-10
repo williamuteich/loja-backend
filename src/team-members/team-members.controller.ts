@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Request, ForbiddenException } from '@nestjs/common';
 import { TeamMembersService } from './team-members.service';
 import { CreateTeamMemberDto } from './dto/create-team-member.dto';
 import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { Role } from '@prisma/client';
 
 @ApiTags('team-members')
 @Controller('team-members')
@@ -10,7 +12,8 @@ export class TeamMembersController {
   constructor(private readonly teamMembersService: TeamMembersService) { }
 
   @Post()
-  @ApiOperation({ summary: 'Create a new team member' })
+  @Auth(Role.ADMIN)
+  @ApiOperation({ summary: 'Create a new team member (ADMIN only)' })
   @ApiResponse({ status: 201, description: 'Team member created successfully' })
   @ApiResponse({ status: 409, description: 'Email already exists' })
   create(@Body() createTeamMemberDto: CreateTeamMemberDto) {
@@ -18,7 +21,8 @@ export class TeamMembersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all team members' })
+  @Auth(Role.ADMIN, Role.COLLABORATOR)
+  @ApiOperation({ summary: 'Get all team members (ADMIN/COLLABORATOR only)' })
   @ApiResponse({ status: 200, description: 'Return all team members' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
   @ApiQuery({ name: 'take', required: false, type: Number })
@@ -30,25 +34,34 @@ export class TeamMembersController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a team member by ID' })
+  @Auth(Role.ADMIN, Role.COLLABORATOR)
+  @ApiOperation({ summary: 'Get a team member by ID (own data or ADMIN)' })
   @ApiResponse({ status: 200, description: 'Return the team member' })
   @ApiResponse({ status: 404, description: 'Team member not found' })
   @ApiParam({ name: 'id', description: 'Team member ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @Request() req) {
+    if (req.user.role !== Role.ADMIN && req.user.id !== id) {
+      throw new ForbiddenException('You can only view your own data');
+    }
     return this.teamMembersService.findOne(id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a team member' })
+  @Auth(Role.ADMIN, Role.COLLABORATOR)
+  @ApiOperation({ summary: 'Update a team member (own data or ADMIN)' })
   @ApiResponse({ status: 200, description: 'Team member updated successfully' })
   @ApiResponse({ status: 404, description: 'Team member not found' })
   @ApiParam({ name: 'id', description: 'Team member ID' })
-  update(@Param('id') id: string, @Body() updateTeamMemberDto: UpdateTeamMemberDto) {
+  update(@Param('id') id: string, @Body() updateTeamMemberDto: UpdateTeamMemberDto, @Request() req) {
+    if (req.user.role !== Role.ADMIN && req.user.id !== id) {
+      throw new ForbiddenException('You can only update your own data');
+    }
     return this.teamMembersService.update(id, updateTeamMemberDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a team member' })
+  @Auth(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete a team member (ADMIN only)' })
   @ApiResponse({ status: 200, description: 'Team member deleted successfully' })
   @ApiResponse({ status: 404, description: 'Team member not found' })
   @ApiParam({ name: 'id', description: 'Team member ID' })

@@ -36,6 +36,10 @@ export class AuthService {
 
         const accessToken = await this.jwtService.sign(payload);
 
+        if (!accessToken) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
         return {
             access_token: accessToken,
             user: userWithoutPassword
@@ -68,6 +72,10 @@ export class AuthService {
         const expiresIn = process.env.JWT_TEAM_EXPIRES_IN || '1h';
 
         const accessToken = await this.jwtService.sign(payload, expiresIn);
+
+        if (!accessToken) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
 
         return {
             access_token: accessToken,
