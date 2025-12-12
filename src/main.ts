@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -8,14 +7,6 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  if (!process.env.JWT_SECRET) {
-    throw new Error('❌ JWT_SECRET environment variable is required! Please check your .env file.');
-  }
-
-  if (!process.env.DATABASE_URL) {
-    throw new Error('❌ DATABASE_URL environment variable is required! Please check your .env file.');
-  }
-
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(new ValidationPipe({
