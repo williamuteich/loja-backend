@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { PrismaService } from '../database/prisma.service';
 import { Role, Prisma } from '../../generated/prisma/client';
 import { IHashService } from '../common/interfaces/IHashService';
+import { ClientErrors } from '../common/errors/app-errors';
 
 @Injectable()
 export class ClientService {
@@ -35,10 +36,10 @@ export class ClientService {
         } catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 if (error.code === 'P2002') {
-                    throw new ConflictException('Email already exists');
+                    throw ClientErrors.emailAlreadyExists();
                 }
             }
-            throw new InternalServerErrorException('Failed to create client');
+            throw ClientErrors.failedToCreate();
         }
     }
 
@@ -61,7 +62,7 @@ export class ClientService {
                 }
             });
         } catch (error) {
-            throw new InternalServerErrorException('Failed to fetch clients');
+            throw ClientErrors.failedToFetchAll();
         }
     }
 
@@ -81,7 +82,7 @@ export class ClientService {
             });
 
             if (!client) {
-                throw new NotFoundException(`Client with ID ${id} not found`);
+                throw ClientErrors.notFound(id);
             }
 
             return client;
@@ -89,7 +90,7 @@ export class ClientService {
             if (error instanceof NotFoundException) {
                 throw error;
             }
-            throw new InternalServerErrorException('Failed to fetch client');
+            throw ClientErrors.failedToFetchOne();
         }
     }
 
@@ -111,13 +112,13 @@ export class ClientService {
         } catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 if (error.code === 'P2025') {
-                    throw new NotFoundException(`Client with ID ${id} not found`);
+                    throw ClientErrors.notFound(id);
                 }
                 if (error.code === 'P2002') {
-                    throw new ConflictException('Email already exists');
+                    throw ClientErrors.emailAlreadyExists();
                 }
             }
-            throw new InternalServerErrorException('Failed to update client');
+            throw ClientErrors.failedToUpdate();
         }
     }
 }

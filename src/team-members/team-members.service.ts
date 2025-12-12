@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTeamMemberDto } from './dto/create-team-member.dto';
 import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { PrismaService } from '../database/prisma.service';
 import { Prisma } from '../../generated/prisma/client';
 import { IHashService } from '../common/interfaces/IHashService';
+import { TeamMemberErrors } from '../common/errors/app-errors';
 
 @Injectable()
 export class TeamMembersService {
@@ -35,10 +36,10 @@ export class TeamMembersService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ConflictException('Email already exists');
+          throw TeamMemberErrors.emailAlreadyExists();
         }
       }
-      throw new InternalServerErrorException('Failed to create team member');
+      throw TeamMemberErrors.failedToCreate();
     }
   }
 
@@ -58,7 +59,7 @@ export class TeamMembersService {
         }
       });
     } catch (error) {
-      throw new InternalServerErrorException('Failed to fetch team members');
+      throw TeamMemberErrors.failedToFetchAll();
     }
   }
 
@@ -78,7 +79,7 @@ export class TeamMembersService {
       });
 
       if (!teamMember) {
-        throw new NotFoundException(`Team member with ID ${id} not found`);
+        throw TeamMemberErrors.notFound(id);
       }
 
       return teamMember;
@@ -86,7 +87,7 @@ export class TeamMembersService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new InternalServerErrorException('Failed to fetch team member');
+      throw TeamMemberErrors.failedToFetchOne();
     }
   }
 
@@ -108,13 +109,13 @@ export class TeamMembersService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
-          throw new NotFoundException(`Team member with ID ${id} not found`);
+          throw TeamMemberErrors.notFound(id);
         }
         if (error.code === 'P2002') {
-          throw new ConflictException('Email already exists');
+          throw TeamMemberErrors.emailAlreadyExists();
         }
       }
-      throw new InternalServerErrorException('Failed to update team member');
+      throw TeamMemberErrors.failedToUpdate();
     }
   }
 
@@ -135,10 +136,10 @@ export class TeamMembersService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
-          throw new NotFoundException(`Team member with ID ${id} not found`);
+          throw TeamMemberErrors.notFound(id);
         }
       }
-      throw new InternalServerErrorException('Failed to delete team member');
+      throw TeamMemberErrors.failedToDelete();
     }
   }
 }
