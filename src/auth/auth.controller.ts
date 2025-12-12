@@ -25,7 +25,8 @@ export class AuthController {
             maxAge: 24 * 60 * 60 * 1000,
         });
 
-        return { user: result.user };
+        // Temporariamente expomos o token também no corpo para facilitar uso no Swagger Authorize
+        return { user: result.user, accessToken: result.access_token };
     }
 
     @Post('team/login')
@@ -43,7 +44,8 @@ export class AuthController {
             maxAge: 60 * 60 * 1000,
         });
 
-        return { user: result.user };
+        // Temporariamente expomos o token também no corpo para facilitar uso no Swagger Authorize
+        return { user: result.user, accessToken: result.access_token };
     }
 
     @Post('logout')

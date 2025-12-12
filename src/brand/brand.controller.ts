@@ -22,8 +22,7 @@ export class BrandController {
     }
 
     @Get()
-    @Auth(Role.ADMIN, Role.COLLABORATOR)
-    @ApiOperation({ summary: 'Get all brands (ADMIN/COLLABORATOR only)' })
+    @ApiOperation({ summary: 'Get all brands (public)' })
     @ApiResponse({ status: 200, description: 'Return all brands' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
     @ApiQuery({ name: 'take', required: false, type: Number })
@@ -33,8 +32,7 @@ export class BrandController {
     }
 
     @Get(':id')
-    @Auth(Role.ADMIN, Role.COLLABORATOR)
-    @ApiOperation({ summary: 'Get a brand by ID (ADMIN/COLLABORATOR only)' })
+    @ApiOperation({ summary: 'Get a brand by ID (public)' })
     @ApiResponse({ status: 200, description: 'Return the brand' })
     @ApiResponse({ status: 404, description: 'Brand not found' })
     @ApiParam({ name: 'id', description: 'Brand ID' })

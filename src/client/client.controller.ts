@@ -13,7 +13,8 @@ export class ClientController {
     constructor(private readonly clientService: ClientService) { }
 
     @Post()
-    @ApiOperation({ summary: 'Create a new client (public)' })
+    @Auth(Role.ADMIN)
+    @ApiOperation({ summary: 'Create a new client (ADMIN only)' })
     @ApiResponse({ status: 201, description: 'The client has been successfully created.' })
     @ApiResponse({ status: 400, description: 'Bad request.' })
     create(@Body() createClientDto: CreateClientDto) {
@@ -32,13 +33,13 @@ export class ClientController {
     }
 
     @Get(':id')
-    @Auth(Role.ADMIN, Role.CLIENT)
-    @ApiOperation({ summary: 'Get a client by ID (own data or ADMIN)' })
+    @Auth(Role.ADMIN, Role.COLLABORATOR, Role.CLIENT)
+    @ApiOperation({ summary: 'Get a client by ID (team members or own data)' })
     @ApiResponse({ status: 200, description: 'Return the client.' })
     @ApiResponse({ status: 404, description: 'Client not found.' })
     @ApiParam({ name: 'id', description: 'Client ID' })
     findOne(@Param('id') id: string, @Request() req) {
-        if (req.user.role !== Role.ADMIN && req.user.id !== id) {
+        if (req.user.role === Role.CLIENT && req.user.id !== id) {
             throw new ForbiddenException('You can only view your own data');
         }
         return this.clientService.findOne(id);

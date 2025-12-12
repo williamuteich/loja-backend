@@ -39,8 +39,7 @@ export class CategoryController {
     }
 
     @Get()
-    @Auth(Role.ADMIN, Role.COLLABORATOR)
-    @ApiOperation({ summary: 'Get all categories (ADMIN/COLLABORATOR only)' })
+    @ApiOperation({ summary: 'Get all categories (public)' })
     @ApiResponse({ status: 200, description: 'Return all categories' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
     @ApiQuery({ name: 'take', required: false, type: Number })
@@ -50,8 +49,7 @@ export class CategoryController {
     }
 
     @Get(':id')
-    @Auth(Role.ADMIN, Role.COLLABORATOR)
-    @ApiOperation({ summary: 'Get a category by ID (ADMIN/COLLABORATOR only)' })
+    @ApiOperation({ summary: 'Get a category by ID (public)' })
     @ApiResponse({ status: 200, description: 'Return the category' })
     @ApiResponse({ status: 404, description: 'Category not found' })
     @ApiParam({ name: 'id', description: 'Category ID' })

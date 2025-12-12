@@ -20,4 +20,7 @@ export class LoginUserDto {
 export class LoginResponseDto {
   @ApiProperty({ type: () => LoginUserDto })
   user: LoginUserDto;
+
+  @ApiProperty({ description: 'JWT access token, temporarily exposto para uso no Swagger Authorize' })
+  accessToken: string;
 }
