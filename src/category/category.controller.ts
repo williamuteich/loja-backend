@@ -23,6 +23,7 @@ export class CategoryController {
             type: 'object',
             properties: {
                 name: { type: 'string', example: 'Eletrônicos' },
+                description: { type: 'string', example: 'Description of the category' },
                 file: { type: 'string', format: 'binary' },
             },
             required: ['name'],
