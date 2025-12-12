@@ -26,18 +26,47 @@ export class AllExceptionsFilter implements ExceptionFilter {
                 ? exception.getResponse()
                 : null;
 
-        const message =
-            typeof exceptionResponse === 'object' && exceptionResponse !== null
-                ? (exceptionResponse as any).message || 'Internal server error'
-                : exception instanceof HttpException
-                    ? exceptionResponse
-                    : 'Internal server error';
+        let message: string | string[] | undefined = undefined;
+        let errorCode: string | undefined = undefined;
+
+        if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+            const res: any = exceptionResponse;
+            message = res.message || 'Internal server error';
+            errorCode = res.code;
+        } else if (exception instanceof HttpException) {
+            message = exceptionResponse as any;
+        } else {
+            message = 'Internal server error';
+        }
+
+        if (!errorCode) {
+            switch (httpStatus) {
+                case HttpStatus.BAD_REQUEST:
+                    errorCode = 'BAD_REQUEST';
+                    break;
+                case HttpStatus.UNAUTHORIZED:
+                    errorCode = 'UNAUTHORIZED';
+                    break;
+                case HttpStatus.FORBIDDEN:
+                    errorCode = 'FORBIDDEN';
+                    break;
+                case HttpStatus.NOT_FOUND:
+                    errorCode = 'NOT_FOUND';
+                    break;
+                case HttpStatus.CONFLICT:
+                    errorCode = 'CONFLICT';
+                    break;
+                default:
+                    errorCode = 'INTERNAL_SERVER_ERROR';
+            }
+        }
 
         const responseBody = {
             statusCode: httpStatus,
             timestamp: new Date().toISOString(),
             path: httpAdapter.getRequestUrl(ctx.getRequest()),
-            message: message,
+            errorCode,
+            message,
         };
 
         httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);

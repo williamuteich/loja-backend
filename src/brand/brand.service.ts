@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
@@ -10,81 +10,58 @@ export class BrandService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createBrandDto: CreateBrandDto) {
-        try {
-            return await this.prisma.brand.create({
-                data: createBrandDto,
-            });
-        } catch (error) {
-            if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                if (error.code === 'P2002') {
-                    throw BrandErrors.nameAlreadyExists();
-                }
-            }
-            throw BrandErrors.failedToCreate();
-        }
+        return await this.prisma.brand.create({
+            data: createBrandDto,
+        });
     }
 
     async findAll(skip: number = 0, take: number = 10) {
-        try {
-            return await this.prisma.brand.findMany({
-                skip,
-                take,
-            });
-        } catch (error) {
-            throw BrandErrors.failedToFetchAll();
-        }
+        return await this.prisma.brand.findMany({
+            skip,
+            take,
+        });
     }
 
     async findOne(id: string) {
-        try {
-            const brand = await this.prisma.brand.findUnique({
-                where: { id },
-            });
+        const brand = await this.prisma.brand.findUnique({
+            where: { id },
+        });
 
-            if (!brand) {
-                throw BrandErrors.notFound(id);
-            }
-
-            return brand;
-        } catch (error) {
-            if (error instanceof NotFoundException) {
-                throw error;
-            }
-            throw BrandErrors.failedToFetchOne();
+        if (!brand) {
+            throw BrandErrors.notFound(id);
         }
+
+        return brand;
     }
 
     async update(id: string, updateBrandDto: UpdateBrandDto) {
-        try {
-            return await this.prisma.brand.update({
-                where: { id },
-                data: updateBrandDto,
-            });
-        } catch (error) {
-            if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                if (error.code === 'P2025') {
-                    throw BrandErrors.notFound(id);
-                }
-                if (error.code === 'P2002') {
-                    throw BrandErrors.nameAlreadyExists();
-                }
-            }
-            throw BrandErrors.failedToUpdate();
+        const existing = await this.prisma.brand.findUnique({
+            where: { id },
+            select: { id: true },
+        });
+
+        if (!existing) {
+            throw BrandErrors.notFound(id);
         }
+
+        return await this.prisma.brand.update({
+            where: { id },
+            data: updateBrandDto,
+        });
     }
 
     async remove(id: string) {
-        try {
-            return await this.prisma.brand.delete({
-                where: { id },
-            });
-        } catch (error) {
-            if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                if (error.code === 'P2025') {
-                    throw BrandErrors.notFound(id);
-                }
-            }
-            throw BrandErrors.failedToDelete();
+        const existing = await this.prisma.brand.findUnique({
+            where: { id },
+            select: { id: true },
+        });
+
+        if (!existing) {
+            throw BrandErrors.notFound(id);
         }
+
+        return await this.prisma.brand.delete({
+            where: { id },
+        });
     }
 }

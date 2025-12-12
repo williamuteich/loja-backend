@@ -1,7 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { IHashService } from '../common/interfaces/IHashService';
 import { IJwtService } from '../common/interfaces/IJwtService';
 import { PrismaService } from '../database/prisma.service';
+import { AuthErrors } from '../common/errors/app-errors';
 
 @Injectable()
 export class AuthService {
@@ -17,13 +18,13 @@ export class AuthService {
         });
 
         if (!client) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw AuthErrors.unauthorized('Invalid credentials');
         }
 
         const isPasswordValid = await this.hashService.compare(password, client.password);
 
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw AuthErrors.unauthorized('Invalid credentials');
         }
 
         const { password: _, ...userWithoutPassword } = client;
@@ -37,7 +38,7 @@ export class AuthService {
         const accessToken = await this.jwtService.sign(payload);
 
         if (!accessToken) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw AuthErrors.unauthorized('Invalid credentials');
         }
 
         return {
@@ -52,13 +53,13 @@ export class AuthService {
         });
 
         if (!teamMember) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw AuthErrors.unauthorized('Invalid credentials');
         }
 
         const isPasswordValid = await this.hashService.compare(password, teamMember.password);
 
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw AuthErrors.unauthorized('Invalid credentials');
         }
 
         const { password: _, ...userWithoutPassword } = teamMember;
@@ -74,7 +75,7 @@ export class AuthService {
         const accessToken = await this.jwtService.sign(payload, expiresIn);
 
         if (!accessToken) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw AuthErrors.unauthorized('Invalid credentials');
         }
 
         return {

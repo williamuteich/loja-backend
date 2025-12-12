@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateTeamMemberDto } from './dto/create-team-member.dto';
 import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { PrismaService } from '../database/prisma.service';
@@ -15,131 +15,108 @@ export class TeamMembersService {
   ) { }
 
   async create(createTeamMemberDto: CreateTeamMemberDto) {
-    try {
-      const hashedPassword = await this.hashService.hash(createTeamMemberDto.password);
+    const hashedPassword = await this.hashService.hash(createTeamMemberDto.password);
 
-      return await this.prisma.team.create({
-        data: {
-          ...createTeamMemberDto,
-          password: hashedPassword,
-        },
-        select: {
-          id: true,
-          name: true,
-          lastName: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true
-        }
-      });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw TeamMemberErrors.emailAlreadyExists();
-        }
+    return await this.prisma.team.create({
+      data: {
+        ...createTeamMemberDto,
+        password: hashedPassword,
+      },
+      select: {
+        id: true,
+        name: true,
+        lastName: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true
       }
-      throw TeamMemberErrors.failedToCreate();
-    }
+    });
   }
 
   async findAll(skip: number = 0, take: number = 10) {
-    try {
-      return await this.prisma.team.findMany({
-        skip,
-        take,
-        select: {
-          id: true,
-          name: true,
-          lastName: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true
-        }
-      });
-    } catch (error) {
-      throw TeamMemberErrors.failedToFetchAll();
-    }
+    return await this.prisma.team.findMany({
+      skip,
+      take,
+      select: {
+        id: true,
+        name: true,
+        lastName: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
   }
 
   async findOne(id: string) {
-    try {
-      const teamMember = await this.prisma.team.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          name: true,
-          lastName: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true
-        }
-      });
-
-      if (!teamMember) {
-        throw TeamMemberErrors.notFound(id);
+    const teamMember = await this.prisma.team.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        lastName: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true
       }
+    });
 
-      return teamMember;
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      throw TeamMemberErrors.failedToFetchOne();
+    if (!teamMember) {
+      throw TeamMemberErrors.notFound(id);
     }
+
+    return teamMember;
   }
 
   async update(id: string, updateTeamMemberDto: UpdateTeamMemberDto) {
-    try {
-      return await this.prisma.team.update({
-        where: { id },
-        data: updateTeamMemberDto,
-        select: {
-          id: true,
-          name: true,
-          lastName: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true
-        }
-      });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw TeamMemberErrors.notFound(id);
-        }
-        if (error.code === 'P2002') {
-          throw TeamMemberErrors.emailAlreadyExists();
-        }
-      }
-      throw TeamMemberErrors.failedToUpdate();
+    const existing = await this.prisma.team.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      throw TeamMemberErrors.notFound(id);
     }
+
+    return await this.prisma.team.update({
+      where: { id },
+      data: updateTeamMemberDto,
+      select: {
+        id: true,
+        name: true,
+        lastName: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
   }
 
   async remove(id: string) {
-    try {
-      return await this.prisma.team.delete({
-        where: { id },
-        select: {
-          id: true,
-          name: true,
-          lastName: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true
-        }
-      });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw TeamMemberErrors.notFound(id);
-        }
-      }
-      throw TeamMemberErrors.failedToDelete();
+    const existing = await this.prisma.team.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      throw TeamMemberErrors.notFound(id);
     }
+
+    return await this.prisma.team.delete({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        lastName: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
   }
 }
