@@ -5,6 +5,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../../generated/prisma/client';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @ApiTags('category')
 @Controller('category')
@@ -26,11 +27,9 @@ export class CategoryController {
     @ApiResponse({ status: 200, description: 'Return all categories' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
     @ApiQuery({ name: 'take', required: false, type: Number })
-    findAll(@Query('skip') skip?: string, @Query('take') take?: string) {
-        return this.categoryService.findAll(
-            skip ? parseInt(skip) : 0,
-            take ? parseInt(take) : 10,
-        );
+    findAll(@Query() query: PaginationQueryDto) {
+        const { skip = 0, take = 10 } = query;
+        return this.categoryService.findAll(skip, take);
     }
 
     @Get(':id')

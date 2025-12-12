@@ -5,6 +5,7 @@ import { UpdateClientDto } from './dto/update-client.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../../generated/prisma/client';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @ApiTags('client')
 @Controller('client')
@@ -25,11 +26,9 @@ export class ClientController {
     @ApiResponse({ status: 200, description: 'Return all clients.' })
     @ApiQuery({ name: 'skip', required: false, type: Number, description: 'Number of records to skip' })
     @ApiQuery({ name: 'take', required: false, type: Number, description: 'Number of records to take' })
-    findAll(@Query('skip') skip?: string, @Query('take') take?: string) {
-        return this.clientService.findAll(
-            skip ? parseInt(skip) : 0,
-            take ? parseInt(take) : 10,
-        );
+    findAll(@Query() query: PaginationQueryDto) {
+        const { skip = 0, take = 10 } = query;
+        return this.clientService.findAll(skip, take);
     }
 
     @Get(':id')

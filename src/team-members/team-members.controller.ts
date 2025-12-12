@@ -5,6 +5,7 @@ import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../../generated/prisma/client';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @ApiTags('team-members')
 @Controller('team-members')
@@ -26,11 +27,9 @@ export class TeamMembersController {
   @ApiResponse({ status: 200, description: 'Return all team members' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
   @ApiQuery({ name: 'take', required: false, type: Number })
-  findAll(@Query('skip') skip?: string, @Query('take') take?: string) {
-    return this.teamMembersService.findAll(
-      skip ? parseInt(skip) : 0,
-      take ? parseInt(take) : 10,
-    );
+  findAll(@Query() query: PaginationQueryDto) {
+    const { skip = 0, take = 10 } = query;
+    return this.teamMembersService.findAll(skip, take);
   }
 
   @Get(':id')
