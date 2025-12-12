@@ -4,7 +4,7 @@ import { CreateTeamMemberDto } from './dto/create-team-member.dto';
 import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '@prisma/client';
+import { Role } from '../../generated/prisma/client';
 
 @ApiTags('team-members')
 @Controller('team-members')

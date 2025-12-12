@@ -2,8 +2,7 @@ import { Injectable, NotFoundException, ConflictException, InternalServerErrorEx
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { PrismaService } from '../database/prisma.service';
-import { Role } from '@prisma/client';
-import { Prisma } from '@prisma/client';
+import { Role, Prisma } from '../../generated/prisma/client';
 import { IHashService } from '../common/interfaces/IHashService';
 
 @Injectable()

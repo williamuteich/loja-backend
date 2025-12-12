@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, InternalServerErrorEx
 import { CreateTeamMemberDto } from './dto/create-team-member.dto';
 import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { PrismaService } from '../database/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../generated/prisma/client';
 import { IHashService } from '../common/interfaces/IHashService';
 
 @Injectable()

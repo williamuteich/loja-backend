@@ -4,7 +4,7 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '@prisma/client';
+import { Role } from '../../generated/prisma/client';
 
 @ApiTags('client')
 @Controller('client')
