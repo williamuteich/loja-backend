@@ -4,14 +4,27 @@ import { PrismaService } from '../database/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoryErrors } from '../common/errors/app-errors';
+import { IFileStorageService } from '../common/interfaces/IFileStorageService';
 
 @Injectable()
 export class CategoryService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly fileStorageService: IFileStorageService,
+    ) { }
 
-    async create(createCategoryDto: CreateCategoryDto) {
+    async create(createCategoryDto: CreateCategoryDto, file?: any) {
+        let imageUrl: string | undefined;
+
+        if (file) {
+            imageUrl = await this.fileStorageService.save(file, 'categories');
+        }
+
         return await this.prisma.category.create({
-            data: createCategoryDto,
+            data: {
+                ...createCategoryDto,
+                ...(imageUrl ? { imageUrl } : {}),
+            },
         });
     }
 
@@ -62,6 +75,24 @@ export class CategoryService {
 
         return await this.prisma.category.delete({
             where: { id },
+        });
+    }
+
+    async updateImage(id: string, file: any) {
+        const existing = await this.prisma.category.findUnique({
+            where: { id },
+            select: { id: true },
+        });
+
+        if (!existing) {
+            throw CategoryErrors.notFound(id);
+        }
+
+        const imageUrl = await this.fileStorageService.save(file, 'categories');
+
+        return await this.prisma.category.update({
+            where: { id },
+            data: { imageUrl },
         });
     }
 }

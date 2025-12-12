@@ -17,7 +17,7 @@ import { IJwtService } from '../common/interfaces/IJwtService';
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
                 secret: config.get<string>('jwt.secret'),
-                signOptions: { expiresIn: '15m' },
+                signOptions: { expiresIn: '1h' },
             }),
         }),
     ],
