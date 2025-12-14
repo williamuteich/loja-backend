@@ -9,7 +9,7 @@ export class ProductService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly fileStorage: IFileStorageService,
-  ) {}
+  ) { }
 
   async create(dto: CreateProductDto, files?: any[]) {
     const { variants, categoryIds, imageUrls, brandId, ...rest } = dto;
@@ -26,8 +26,8 @@ export class ProductService {
     const normalizedCategoryIds: string[] = Array.isArray(categoryIds)
       ? categoryIds
       : categoryIds
-      ? [categoryIds]
-      : [];
+        ? [categoryIds]
+        : [];
 
     let normalizedVariants: any[] = [];
     if (Array.isArray(variants)) {
@@ -125,57 +125,69 @@ export class ProductService {
 
     const { variants, categoryIds, imageUrls, brandId, ...rest } = dto;
 
-    const normalizedCategoryIds: string[] = Array.isArray(categoryIds)
-      ? categoryIds
-      : categoryIds
-      ? [categoryIds]
-      : [];
+    const data: any = { ...rest };
+    delete data.files;
 
-    let normalizedVariants: any[] = [];
-    if (Array.isArray(variants)) {
-      normalizedVariants = variants.map((item) => {
-        if (typeof item === 'string') {
-          try {
-            return JSON.parse(item);
-          } catch {
-            return null;
-          }
-        }
-        return item;
-      }).filter(Boolean) as any[];
-    } else if (typeof variants === 'string') {
-      try {
-        const parsed = JSON.parse(variants);
-        normalizedVariants = Array.isArray(parsed) ? parsed : [parsed];
-      } catch {
-        normalizedVariants = [];
-      }
-    } else if (variants && typeof variants === 'object') {
-      normalizedVariants = [variants];
+    if (brandId !== undefined) {
+      data.brandId = brandId;
     }
 
-    await this.prisma.productVariant.deleteMany({ where: { productId: id } });
-    await this.prisma.productImage.deleteMany({ where: { productId: id } });
-    await this.prisma.productCategory.deleteMany({ where: { productId: id } });
+    if (variants !== undefined) {
+      let normalizedVariants: any[] = [];
+      if (Array.isArray(variants)) {
+        normalizedVariants = variants.map((item) => {
+          if (typeof item === 'string') {
+            try {
+              return JSON.parse(item);
+            } catch {
+              return null;
+            }
+          }
+          return item;
+        }).filter(Boolean) as any[];
+      } else if (typeof variants === 'string') {
+        try {
+          const parsed = JSON.parse(variants);
+          normalizedVariants = Array.isArray(parsed) ? parsed : [parsed];
+        } catch {
+          normalizedVariants = [];
+        }
+      } else if (variants && typeof variants === 'object') {
+        normalizedVariants = [variants];
+      }
+
+      await this.prisma.productVariant.deleteMany({ where: { productId: id } });
+      data.variants = {
+        create: normalizedVariants.map((v) => ({
+          color: v.color,
+          quantity: v.quantity,
+        })),
+      };
+    }
+
+    if (categoryIds !== undefined) {
+      const normalizedCategoryIds: string[] = Array.isArray(categoryIds)
+        ? categoryIds
+        : categoryIds
+          ? [categoryIds]
+          : [];
+
+      await this.prisma.productCategory.deleteMany({ where: { productId: id } });
+      data.categories = {
+        create: normalizedCategoryIds.map((categoryId) => ({ categoryId })),
+      };
+    }
+
+    if (imageUrls !== undefined) {
+      await this.prisma.productImage.deleteMany({ where: { productId: id } });
+      data.images = {
+        create: imageUrls.map((url) => ({ url })),
+      };
+    }
 
     return this.prisma.product.update({
       where: { id },
-      data: {
-        ...rest,
-        ...(brandId !== undefined ? { brandId } : {}),
-        variants: {
-          create: normalizedVariants.map((v) => ({
-            color: v.color,
-            quantity: v.quantity,
-          })),
-        },
-        images: {
-          create: imageUrls?.map((url) => ({ url })) ?? [],
-        },
-        categories: {
-          create: normalizedCategoryIds.map((categoryId) => ({ categoryId })),
-        },
-      },
+      data,
       include: {
         variants: true,
         images: true,

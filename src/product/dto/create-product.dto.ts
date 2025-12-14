@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
@@ -55,6 +55,7 @@ export class CreateProductDto {
   @ApiProperty({ description: 'Brand ID', required: false })
   @IsUUID()
   @IsOptional()
+  @Transform(({ value }) => (!value || value === '' || value === 'null' ? undefined : value))
   brandId?: string;
 
   @ApiProperty({
@@ -63,6 +64,16 @@ export class CreateProductDto {
     example: ['uuid-category-1', 'uuid-category-2'],
   })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (!value || value === '') return undefined;
+    if (typeof value === 'string') {
+      if (value.startsWith('[')) {
+        try { return JSON.parse(value); } catch (e) { return value; }
+      }
+      return [value];
+    }
+    return value;
+  })
   categoryIds?: any;
 
   @ApiProperty({
@@ -74,6 +85,13 @@ export class CreateProductDto {
     ],
   })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (!value || value === '') return undefined;
+    if (typeof value === 'string') {
+      try { return JSON.parse(value); } catch (e) { return undefined; }
+    }
+    return value;
+  })
   variants?: any;
 
   @ApiProperty({
@@ -85,5 +103,10 @@ export class CreateProductDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
+  @Transform(({ value }) => (!value || value === '' ? undefined : value))
   imageUrls?: string[];
+
+  @ApiProperty({ required: false, type: 'string', format: 'binary' })
+  @IsOptional()
+  files?: any;
 }

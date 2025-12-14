@@ -108,3 +108,24 @@ model Brand {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
+
+model banner {
+  id String @id @default(uuid())
+  title String
+  subtitle String?
+  linkUrl String?
+  imageDesktop String?
+  imageMobile String?
+  resolutionDesktop String?
+  resolutionMobile String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model newsletter {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  whatsapp   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
