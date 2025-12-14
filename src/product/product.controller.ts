@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFiles, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -7,11 +7,18 @@ import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../../generated/prisma/client';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.interceptor';
 
 @ApiTags('product')
 @Controller('product')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) { }
 
   @Post()
   @Auth(Role.ADMIN)
@@ -46,14 +53,19 @@ export class ProductController {
       required: ['title', 'price', 'variants'],
     },
   })
-  create(
+  async create(
     @Body() createProductDto: CreateProductDto,
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
-    return this.productService.create(createProductDto, files);
+    const result = await this.productService.create(createProductDto, files);
+    await this.cacheManager.del('products_all');
+    return result;
   }
 
   @Get()
+  @UseInterceptors(LoggingCacheInterceptor)
+  @CacheKey('products_all')
+  @CacheTTL(3600000)
   @ApiOperation({ summary: 'Get all products (public)' })
   @ApiResponse({ status: 200, description: 'Return all products' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -64,6 +76,8 @@ export class ProductController {
   }
 
   @Get(':id')
+  @UseInterceptors(LoggingCacheInterceptor)
+  @CacheTTL(3600000)
   @ApiOperation({ summary: 'Get a product by ID (public)' })
   @ApiResponse({ status: 200, description: 'Return the product' })
   @ApiResponse({ status: 404, description: 'Product not found' })
@@ -106,12 +120,15 @@ export class ProductController {
       },
     },
   })
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
-    return this.productService.update(id, updateProductDto, files);
+    const result = await this.productService.update(id, updateProductDto, files);
+    await this.cacheManager.del('products_all');
+    await this.cacheManager.del(`/product/${id}`);
+    return result;
   }
 
   @Delete(':id')
@@ -120,7 +137,10 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'Product deleted successfully' })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiParam({ name: 'id', description: 'Product ID' })
-  remove(@Param('id') id: string) {
-    return this.productService.remove(id);
+  async remove(@Param('id') id: string) {
+    const result = await this.productService.remove(id);
+    await this.cacheManager.del('products_all');
+    await this.cacheManager.del(`/product/${id}`);
+    return result;
   }
 }

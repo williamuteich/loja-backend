@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Request, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Request, ForbiddenException, UseInterceptors, Inject } from '@nestjs/common';
 import { TeamMembersService } from './team-members.service';
 import { CreateTeamMemberDto } from './dto/create-team-member.dto';
 import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
@@ -6,23 +6,35 @@ import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../../generated/prisma/client';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.interceptor';
 
 @ApiTags('team-members')
 @Controller('team-members')
 export class TeamMembersController {
-  constructor(private readonly teamMembersService: TeamMembersService) { }
+  constructor(
+    private readonly teamMembersService: TeamMembersService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) { }
 
   @Post()
   @Auth(Role.ADMIN)
   @ApiOperation({ summary: 'Create a new team member (ADMIN only)' })
   @ApiResponse({ status: 201, description: 'Team member created successfully' })
   @ApiResponse({ status: 409, description: 'Email already exists' })
-  create(@Body() createTeamMemberDto: CreateTeamMemberDto) {
-    return this.teamMembersService.create(createTeamMemberDto);
+  async create(@Body() createTeamMemberDto: CreateTeamMemberDto) {
+    const result = await this.teamMembersService.create(createTeamMemberDto);
+    await this.cacheManager.del('team_members_all');
+    return result;
   }
 
   @Get()
   @Auth(Role.ADMIN, Role.COLLABORATOR)
+  @UseInterceptors(LoggingCacheInterceptor)
+  @CacheKey('team_members_all')
+  @CacheTTL(3600000)
   @ApiOperation({ summary: 'Get all team members (ADMIN/COLLABORATOR only)' })
   @ApiResponse({ status: 200, description: 'Return all team members' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -34,6 +46,8 @@ export class TeamMembersController {
 
   @Get(':id')
   @Auth(Role.ADMIN, Role.COLLABORATOR)
+  @UseInterceptors(LoggingCacheInterceptor)
+  @CacheTTL(3600000)
   @ApiOperation({ summary: 'Get a team member by ID (own data or ADMIN)' })
   @ApiResponse({ status: 200, description: 'Return the team member' })
   @ApiResponse({ status: 404, description: 'Team member not found' })
@@ -51,11 +65,14 @@ export class TeamMembersController {
   @ApiResponse({ status: 200, description: 'Team member updated successfully' })
   @ApiResponse({ status: 404, description: 'Team member not found' })
   @ApiParam({ name: 'id', description: 'Team member ID' })
-  update(@Param('id') id: string, @Body() updateTeamMemberDto: UpdateTeamMemberDto, @Request() req) {
+  async update(@Param('id') id: string, @Body() updateTeamMemberDto: UpdateTeamMemberDto, @Request() req) {
     if (req.user.role !== Role.ADMIN && req.user.id !== id) {
       throw new ForbiddenException('You can only update your own data');
     }
-    return this.teamMembersService.update(id, updateTeamMemberDto);
+    const result = await this.teamMembersService.update(id, updateTeamMemberDto);
+    await this.cacheManager.del('team_members_all');
+    await this.cacheManager.del(`/team-members/${id}`);
+    return result;
   }
 
   @Delete(':id')
@@ -64,7 +81,10 @@ export class TeamMembersController {
   @ApiResponse({ status: 200, description: 'Team member deleted successfully' })
   @ApiResponse({ status: 404, description: 'Team member not found' })
   @ApiParam({ name: 'id', description: 'Team member ID' })
-  remove(@Param('id') id: string) {
-    return this.teamMembersService.remove(id);
+  async remove(@Param('id') id: string) {
+    const result = await this.teamMembersService.remove(id);
+    await this.cacheManager.del('team_members_all');
+    await this.cacheManager.del(`/team-members/${id}`);
+    return result;
   }
 }

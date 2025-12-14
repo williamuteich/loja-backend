@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -7,11 +7,18 @@ import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../../generated/prisma/client';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.interceptor';
 
 @ApiTags('category')
 @Controller('category')
 export class CategoryController {
-    constructor(private readonly categoryService: CategoryService) { }
+    constructor(
+        private readonly categoryService: CategoryService,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    ) { }
 
     @Post()
     @Auth(Role.ADMIN)
@@ -31,14 +38,19 @@ export class CategoryController {
     })
     @ApiResponse({ status: 201, description: 'Category created successfully' })
     @ApiResponse({ status: 409, description: 'Category name already exists' })
-    create(
+    async create(
         @Body() createCategoryDto: CreateCategoryDto,
         @UploadedFile() file?: Express.Multer.File,
     ) {
-        return this.categoryService.create(createCategoryDto, file);
+        const result = await this.categoryService.create(createCategoryDto, file);
+        await this.cacheManager.del('categories_all');
+        return result;
     }
 
     @Get()
+    @UseInterceptors(LoggingCacheInterceptor)
+    @CacheKey('categories_all')
+    @CacheTTL(3600000)
     @ApiOperation({ summary: 'Get all categories (public)' })
     @ApiResponse({ status: 200, description: 'Return all categories' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -49,6 +61,8 @@ export class CategoryController {
     }
 
     @Get(':id')
+    @UseInterceptors(LoggingCacheInterceptor)
+    @CacheTTL(3600000)
     @ApiOperation({ summary: 'Get a category by ID (public)' })
     @ApiResponse({ status: 200, description: 'Return the category' })
     @ApiResponse({ status: 404, description: 'Category not found' })
@@ -63,8 +77,11 @@ export class CategoryController {
     @ApiResponse({ status: 200, description: 'Category updated successfully' })
     @ApiResponse({ status: 404, description: 'Category not found' })
     @ApiParam({ name: 'id', description: 'Category ID' })
-    update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-        return this.categoryService.update(id, updateCategoryDto);
+    async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
+        const result = await this.categoryService.update(id, updateCategoryDto);
+        await this.cacheManager.del('categories_all');
+        await this.cacheManager.del(`/category/${id}`);
+        return result;
     }
 
     @Delete(':id')
@@ -73,8 +90,11 @@ export class CategoryController {
     @ApiResponse({ status: 200, description: 'Category deleted successfully' })
     @ApiResponse({ status: 404, description: 'Category not found' })
     @ApiParam({ name: 'id', description: 'Category ID' })
-    remove(@Param('id') id: string) {
-        return this.categoryService.remove(id);
+    async remove(@Param('id') id: string) {
+        const result = await this.categoryService.remove(id);
+        await this.cacheManager.del('categories_all');
+        await this.cacheManager.del(`/category/${id}`);
+        return result;
     }
 
     @Post(':id/image')
@@ -97,6 +117,9 @@ export class CategoryController {
     @ApiResponse({ status: 404, description: 'Category not found' })
     @ApiParam({ name: 'id', description: 'Category ID' })
     async uploadImage(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
-        return this.categoryService.updateImage(id, file);
+        const result = await this.categoryService.updateImage(id, file);
+        await this.cacheManager.del('categories_all');
+        await this.cacheManager.del(`/category/${id}`);
+        return result;
     }
 }

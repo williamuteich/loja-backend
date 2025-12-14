@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Query, Request, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Query, Request, ForbiddenException, UseInterceptors, Inject } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
@@ -6,23 +6,35 @@ import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../../generated/prisma/client';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.interceptor';
 
 @ApiTags('client')
 @Controller('client')
 export class ClientController {
-    constructor(private readonly clientService: ClientService) { }
+    constructor(
+        private readonly clientService: ClientService,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    ) { }
 
     @Post()
     @Auth(Role.ADMIN)
     @ApiOperation({ summary: 'Create a new client (ADMIN only)' })
     @ApiResponse({ status: 201, description: 'The client has been successfully created.' })
     @ApiResponse({ status: 400, description: 'Bad request.' })
-    create(@Body() createClientDto: CreateClientDto) {
-        return this.clientService.create(createClientDto);
+    async create(@Body() createClientDto: CreateClientDto) {
+        const result = await this.clientService.create(createClientDto);
+        await this.cacheManager.del('clients_all');
+        return result;
     }
 
     @Get()
     @Auth(Role.ADMIN, Role.COLLABORATOR)
+    @UseInterceptors(LoggingCacheInterceptor)
+    @CacheKey('clients_all')
+    @CacheTTL(3600000)
     @ApiOperation({ summary: 'Get all clients (ADMIN/COLLABORATOR only)' })
     @ApiResponse({ status: 200, description: 'Return all clients.' })
     @ApiQuery({ name: 'skip', required: false, type: Number, description: 'Number of records to skip' })
@@ -34,6 +46,8 @@ export class ClientController {
 
     @Get(':id')
     @Auth(Role.ADMIN, Role.COLLABORATOR, Role.CLIENT)
+    @UseInterceptors(LoggingCacheInterceptor)
+    @CacheTTL(3600000)
     @ApiOperation({ summary: 'Get a client by ID (team members or own data)' })
     @ApiResponse({ status: 200, description: 'Return the client.' })
     @ApiResponse({ status: 404, description: 'Client not found.' })
@@ -51,10 +65,13 @@ export class ClientController {
     @ApiResponse({ status: 200, description: 'The client has been successfully updated.' })
     @ApiResponse({ status: 404, description: 'Client not found.' })
     @ApiParam({ name: 'id', description: 'Client ID' })
-    update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto, @Request() req) {
+    async update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto, @Request() req) {
         if (req.user.role !== Role.ADMIN && req.user.id !== id) {
             throw new ForbiddenException('You can only update your own data');
         }
-        return this.clientService.update(id, updateClientDto);
+        const result = await this.clientService.update(id, updateClientDto);
+        await this.cacheManager.del('clients_all');
+        await this.cacheManager.del(`/client/${id}`);
+        return result;
     }
 }

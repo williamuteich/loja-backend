@@ -10,12 +10,18 @@ import { CategoryModule } from './category/category.module';
 import { BrandModule } from './brand/brand.module';
 import { ProductModule } from './product/product.module';
 
+import { CacheModule } from '@nestjs/cache-manager';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
       validationSchema,
+    }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 86400,
     }),
     DatabaseModule,
     ClientModule,
