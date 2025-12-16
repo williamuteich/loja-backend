@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Express } from 'express';
 import { CreateBannerDto } from './dto/create-banner.dto';
-import { UpdateBannerDto } from './dto/update-banner.dto';
 import { PrismaService } from 'src/database/prisma.service';
 import { BannerErrors } from 'src/common/errors/app-errors';
 import { IFileStorageService } from 'src/common/interfaces/IFileStorageService';
@@ -13,28 +11,21 @@ export class BannerService {
     private fileStorage: IFileStorageService
   ) { }
 
-  async create(createBannerDto: CreateBannerDto, files?: Express.Multer.File[]) {
-    const { imageDesktop, imageMobile, ...rest } = createBannerDto;
+  async create(createBannerDto: CreateBannerDto, files?: { desktopImage?: Express.Multer.File[], mobileImage?: Express.Multer.File[] }) {
+    let desktopUrl: string | undefined;
+    let mobileUrl: string | undefined;
 
-    let desktopUrl: string | undefined = imageDesktop;
-    let mobileUrl: string | undefined = imageMobile;
+    if (files?.desktopImage && files.desktopImage.length > 0) {
+      desktopUrl = await this.fileStorage.save(files.desktopImage[0], 'banners');
+    }
 
-    if (files && files.length > 0) {
-      const uploadedUrls = await Promise.all(
-        files.map((file) => this.fileStorage.save(file, 'banners')),
-      );
-
-      if (uploadedUrls[0]) {
-        desktopUrl = uploadedUrls[0];
-      }
-      if (uploadedUrls[1]) {
-        mobileUrl = uploadedUrls[1];
-      }
+    if (files?.mobileImage && files.mobileImage.length > 0) {
+      mobileUrl = await this.fileStorage.save(files.mobileImage[0], 'banners');
     }
 
     return this.prisma.banner.create({
       data: {
-        ...rest,
+        ...createBannerDto,
         ...(desktopUrl ? { imageDesktop: desktopUrl } : {}),
         ...(mobileUrl ? { imageMobile: mobileUrl } : {}),
       },
@@ -61,43 +52,50 @@ export class BannerService {
     return banner;
   }
 
-  async update(id: string, updateBannerDto: UpdateBannerDto, files?: Express.Multer.File[]) {
+  async update(id: string, updateBannerDto: any, files?: { desktopImage?: Express.Multer.File[], mobileImage?: Express.Multer.File[] }) {
     const existing = await this.prisma.banner.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, imageDesktop: true, imageMobile: true },
     });
 
     if (!existing) {
       throw BannerErrors.notFound(id);
     }
 
-    const { imageDesktop, imageMobile, ...rest } = updateBannerDto;
+    const data: any = {};
 
-    const data: any = { ...rest };
-    delete data.files;
-
-    let desktopUrl: string | undefined = imageDesktop as any;
-    let mobileUrl: string | undefined = imageMobile as any;
-
-    if (files && files.length > 0) {
-      const uploadedUrls = await Promise.all(
-        files.map((file) => this.fileStorage.save(file, 'banners')),
-      );
-
-      if (uploadedUrls[0]) {
-        desktopUrl = uploadedUrls[0];
-      }
-      if (uploadedUrls[1]) {
-        mobileUrl = uploadedUrls[1];
-      }
+    if (updateBannerDto.title !== undefined && updateBannerDto.title !== '') {
+      data.title = updateBannerDto.title;
+    }
+    if (updateBannerDto.subtitle !== undefined && updateBannerDto.subtitle !== '') {
+      data.subtitle = updateBannerDto.subtitle;
+    }
+    if (updateBannerDto.linkUrl !== undefined && updateBannerDto.linkUrl !== '') {
+      data.linkUrl = updateBannerDto.linkUrl;
+    }
+    if (updateBannerDto.resolutionDesktop !== undefined && updateBannerDto.resolutionDesktop !== '') {
+      data.resolutionDesktop = updateBannerDto.resolutionDesktop;
+    }
+    if (updateBannerDto.resolutionMobile !== undefined && updateBannerDto.resolutionMobile !== '') {
+      data.resolutionMobile = updateBannerDto.resolutionMobile;
     }
 
-    if (desktopUrl !== undefined) {
-      data.imageDesktop = desktopUrl;
+    if (files?.desktopImage && files.desktopImage.length > 0) {
+      if (existing.imageDesktop) {
+        await this.fileStorage.delete(existing.imageDesktop);
+      }
+      data.imageDesktop = await this.fileStorage.save(files.desktopImage[0], 'banners');
     }
 
-    if (mobileUrl !== undefined) {
-      data.imageMobile = mobileUrl;
+    if (files?.mobileImage && files.mobileImage.length > 0) {
+      if (existing.imageMobile) {
+        await this.fileStorage.delete(existing.imageMobile);
+      }
+      data.imageMobile = await this.fileStorage.save(files.mobileImage[0], 'banners');
+    }
+
+    if (Object.keys(data).length === 0) {
+      return this.prisma.banner.findUnique({ where: { id } });
     }
 
     return this.prisma.banner.update({

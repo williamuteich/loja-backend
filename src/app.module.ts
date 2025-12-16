@@ -13,6 +13,7 @@ import { ProductModule } from './product/product.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { BannerModule } from './banner/banner.module';
 import { NewsletterModule } from './newsletter/newsletter.module';
+import { StoreConfigurationModule } from './store-configuration/store-configuration.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { NewsletterModule } from './newsletter/newsletter.module';
     ProductModule,
     BannerModule,
     NewsletterModule,
+    StoreConfigurationModule,
   ],
   controllers: [],
   providers: [],

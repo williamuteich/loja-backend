@@ -144,6 +144,10 @@ model StoreConfiguration {
   description String?
   phone       String?
   whatsapp    String?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
 
   // ===== Identidade Visual =====
   logoUrl     String?

@@ -4,7 +4,7 @@ import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '../../generated/prisma/client';
+import { Role } from 'src/generated/prisma/enums';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CacheKey, CacheTTL } from '@nestjs/cache-manager';

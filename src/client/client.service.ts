@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { PrismaService } from '../database/prisma.service';
-import { Role, Prisma } from '../../generated/prisma/client';
+
 import { IHashService } from '../common/interfaces/IHashService';
 import { ClientErrors } from '../common/errors/app-errors';
+import { Role } from 'src/generated/prisma/enums';
 
 @Injectable()
 export class ClientService {

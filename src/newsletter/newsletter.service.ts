@@ -11,6 +11,14 @@ export class NewsletterService {
   ) { }
 
   async create(createNewsletterDto: CreateNewsletterDto) {
+    const existing = await this.prisma.newsletter.findFirst({
+      where: { email: createNewsletterDto.email }
+    });
+
+    if (existing) {
+      throw NewsLetterErrors.emailAlreadyExists();
+    }
+
     return this.prisma.newsletter.create({
       data: createNewsletterDto,
     });

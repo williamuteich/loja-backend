@@ -5,7 +5,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '../../generated/prisma/client';
+import { Role } from 'src/generated/prisma/enums';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';

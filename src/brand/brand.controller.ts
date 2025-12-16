@@ -4,7 +4,7 @@ import { BrandService } from './brand.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '../../generated/prisma/client';
+import { Role } from 'src/generated/prisma/enums';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';

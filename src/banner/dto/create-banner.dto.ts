@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger';
+
 export class CreateBannerDto {
     @ApiProperty({
         description: 'Banner title',
@@ -24,22 +25,6 @@ export class CreateBannerDto {
     @IsString()
     @IsOptional()
     linkUrl: string
-
-    @ApiProperty({
-        description: 'Banner image desktop',
-        example: 'https://google.com',
-    })
-    @IsString()
-    @IsOptional()
-    imageDesktop: string
-
-    @ApiProperty({
-        description: 'Banner image mobile',
-        example: 'https://google.com',
-    })
-    @IsString()
-    @IsOptional()
-    imageMobile: string
 
     @ApiProperty({
         description: 'Banner resolution desktop',

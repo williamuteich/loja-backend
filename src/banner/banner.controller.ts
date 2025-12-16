@@ -1,12 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Body, 
+  Patch, 
+  Param, 
+  Delete, 
+  Query, 
+  UploadedFiles, 
+  UseInterceptors,
+  ValidationPipe,
+  UsePipes
+} from '@nestjs/common';
 import { BannerService } from './banner.service';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { UpdateBannerDto } from './dto/update-banner.dto';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor, FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '../../generated/prisma/client';
+import { Role } from 'src/generated/prisma/enums';
 
 @ApiTags('banner')
 @Controller('banner')
@@ -15,7 +28,10 @@ export class BannerController {
 
   @Post()
   @Auth(Role.ADMIN)
-  @UseInterceptors(FilesInterceptor('files'))
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'desktopImage', maxCount: 1 },
+    { name: 'mobileImage', maxCount: 1 },
+  ]))
   @ApiOperation({ summary: 'Create a new banner (ADMIN only)' })
   @ApiResponse({ status: 201, description: 'Banner created successfully' })
   @ApiConsumes('multipart/form-data')
@@ -28,12 +44,15 @@ export class BannerController {
         linkUrl: { type: 'string', example: 'https://meusite.com/produto/123' },
         resolutionDesktop: { type: 'string', example: '1920x1080' },
         resolutionMobile: { type: 'string', example: '600x600' },
-        imageDesktop: { type: 'string', example: 'https://cdn.meusite.com/banner-desktop.jpg' },
-        imageMobile: { type: 'string', example: 'https://cdn.meusite.com/banner-mobile.jpg' },
-        files: {
-          type: 'array',
-          items: { type: 'string', format: 'binary' },
-          description: 'Optional files: [0] desktop image, [1] mobile image',
+        desktopImage: {
+          type: 'string',
+          format: 'binary',
+          description: 'Desktop banner image',
+        },
+        mobileImage: {
+          type: 'string',
+          format: 'binary',
+          description: 'Mobile banner image',
         },
       },
       required: ['title'],
@@ -41,8 +60,10 @@ export class BannerController {
   })
   create(
     @Body() createBannerDto: CreateBannerDto,
-    @UploadedFiles() files?: Express.Multer.File[],
+    @UploadedFiles() files: { desktopImage?: Express.Multer.File[], mobileImage?: Express.Multer.File[] },
   ) {
+    console.log("Files received:", files);
+    console.log("DTO received:", createBannerDto);
     return this.bannerService.create(createBannerDto, files);
   }
 
@@ -67,7 +88,10 @@ export class BannerController {
 
   @Patch(':id')
   @Auth(Role.ADMIN)
-  @UseInterceptors(FilesInterceptor('files'))
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'desktopImage', maxCount: 1 },
+    { name: 'mobileImage', maxCount: 1 },
+  ]))
   @ApiOperation({ summary: 'Update a banner (ADMIN only)' })
   @ApiResponse({ status: 200, description: 'Banner updated successfully' })
   @ApiResponse({ status: 404, description: 'Banner not found' })
@@ -82,20 +106,23 @@ export class BannerController {
         linkUrl: { type: 'string', example: 'https://meusite.com/produto/123' },
         resolutionDesktop: { type: 'string', example: '1920x1080' },
         resolutionMobile: { type: 'string', example: '600x600' },
-        imageDesktop: { type: 'string', example: 'https://cdn.meusite.com/banner-desktop.jpg' },
-        imageMobile: { type: 'string', example: 'https://cdn.meusite.com/banner-mobile.jpg' },
-        files: {
-          type: 'array',
-          items: { type: 'string', format: 'binary' },
-          description: 'Optional files: [0] desktop image, [1] mobile image',
+        desktopImage: {
+          type: 'string',
+          format: 'binary',
+          description: 'Desktop banner image (optional)',
+        },
+        mobileImage: {
+          type: 'string',
+          format: 'binary',
+          description: 'Mobile banner image (optional)',
         },
       },
     },
   })
   update(
     @Param('id') id: string,
-    @Body() updateBannerDto: UpdateBannerDto,
-    @UploadedFiles() files?: Express.Multer.File[],
+    @Body() updateBannerDto: any,
+    @UploadedFiles() files: { desktopImage?: Express.Multer.File[], mobileImage?: Express.Multer.File[] },
   ) {
     return this.bannerService.update(id, updateBannerDto, files);
   }

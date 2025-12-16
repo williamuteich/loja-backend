@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateTeamMemberDto } from './dto/create-team-member.dto';
 import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { PrismaService } from '../database/prisma.service';
-import { Prisma } from '../../generated/prisma/client';
 import { IHashService } from '../common/interfaces/IHashService';
 import { TeamMemberErrors } from '../common/errors/app-errors';
 

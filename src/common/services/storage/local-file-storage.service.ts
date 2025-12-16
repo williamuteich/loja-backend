@@ -24,4 +24,16 @@ export class LocalFileStorageService implements IFileStorageService {
     const relativePath = join('uploads', destination, filename).replace(/\\/g, '/');
     return relativePath;
   }
+
+  async delete(filePath: string): Promise<void> {
+    try {
+      const fullPath = join(process.cwd(), filePath);
+      await fs.unlink(fullPath);
+    } catch (error) {
+      // Don't throw error if file doesn't exist
+      if ((error as any).code !== 'ENOENT') {
+        throw error;
+      }
+    }
+  }
 }

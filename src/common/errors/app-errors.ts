@@ -209,6 +209,13 @@ export class NewsLetterErrors {
     });
   }
 
+  static emailAlreadyExists() {
+    return new ConflictException({
+      code: 'NEWSLETTER_EMAIL_ALREADY_EXISTS',
+      message: 'Email already exists',
+    });
+  }
+
   static failedToCreate() {
     return new InternalServerErrorException({
       code: 'NEWSLETTER_FAILED_TO_CREATE',
@@ -257,6 +264,36 @@ export class ProductErrors {
     return new InternalServerErrorException({
       code: 'PRODUCT_FAILED_TO_DELETE',
       message: 'Failed to delete product',
+    });
+  }
+}
+
+export class StoreConfigurationErrors {
+  static notFound() {
+    return new NotFoundException({
+      code: 'STORE_CONFIGURATION_NOT_FOUND',
+      message: 'Store configuration not found',
+    });
+  }
+
+  static failedToCreate() {
+    return new InternalServerErrorException({
+      code: 'STORE_CONFIGURATION_FAILED_TO_CREATE',
+      message: 'Failed to create store configuration',
+    });
+  }
+
+  static failedToUpdate() {
+    return new InternalServerErrorException({
+      code: 'STORE_CONFIGURATION_FAILED_TO_UPDATE',
+      message: 'Failed to update store configuration',
+    });
+  }
+
+  static failedToUploadLogo() {
+    return new InternalServerErrorException({
+      code: 'STORE_CONFIGURATION_FAILED_TO_UPLOAD_LOGO',
+      message: 'Failed to upload logo',
     });
   }
 }

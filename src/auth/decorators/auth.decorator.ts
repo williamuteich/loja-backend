@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiUnauthorizedResponse, ApiForbiddenResponse } from '@n
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from './roles.decorator';
-import { Role } from '../../../generated/prisma/client';
+import { Role } from 'src/generated/prisma/enums';
 
 export function Auth(...roles: Role[]) {
     return applyDecorators(

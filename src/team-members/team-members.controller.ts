@@ -4,7 +4,7 @@ import { CreateTeamMemberDto } from './dto/create-team-member.dto';
 import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '../../generated/prisma/client';
+import { Role } from 'src/generated/prisma/enums';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
