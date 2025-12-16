@@ -9,22 +9,26 @@ import {
   Query, 
   UploadedFiles, 
   UseInterceptors,
-  ValidationPipe,
-  UsePipes
+  Inject
 } from '@nestjs/common';
 import { BannerService } from './banner.service';
 import { CreateBannerDto } from './dto/create-banner.dto';
-import { UpdateBannerDto } from './dto/update-banner.dto';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import { FilesInterceptor, FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from 'src/generated/prisma/enums';
+import { CacheKey, CacheTTL, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.interceptor';
 
 @ApiTags('banner')
 @Controller('banner')
 export class BannerController {
-  constructor(private readonly bannerService: BannerService) {}
+  constructor(
+    private readonly bannerService: BannerService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   @Post()
   @Auth(Role.ADMIN)
@@ -62,12 +66,15 @@ export class BannerController {
     @Body() createBannerDto: CreateBannerDto,
     @UploadedFiles() files: { desktopImage?: Express.Multer.File[], mobileImage?: Express.Multer.File[] },
   ) {
-    console.log("Files received:", files);
-    console.log("DTO received:", createBannerDto);
-    return this.bannerService.create(createBannerDto, files);
+    const result = this.bannerService.create(createBannerDto, files);
+    this.cacheManager.del('banners_all');
+    return result;
   }
 
   @Get()
+  @UseInterceptors(LoggingCacheInterceptor)
+  @CacheKey('banners_all')
+  @CacheTTL(3600000)
   @ApiOperation({ summary: 'Get all banners (public)' })
   @ApiResponse({ status: 200, description: 'Return all banners' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -78,6 +85,8 @@ export class BannerController {
   }
 
   @Get(':id')
+  @UseInterceptors(LoggingCacheInterceptor)
+  @CacheTTL(3600000)
   @ApiOperation({ summary: 'Get a banner by ID (public)' })
   @ApiResponse({ status: 200, description: 'Return the banner' })
   @ApiResponse({ status: 404, description: 'Banner not found' })
@@ -119,12 +128,15 @@ export class BannerController {
       },
     },
   })
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateBannerDto: any,
     @UploadedFiles() files: { desktopImage?: Express.Multer.File[], mobileImage?: Express.Multer.File[] },
   ) {
-    return this.bannerService.update(id, updateBannerDto, files);
+    const result = await this.bannerService.update(id, updateBannerDto, files);
+    await this.cacheManager.del('banners_all');
+    await this.cacheManager.del(`/banner/${id}`);
+    return result;
   }
 
   @Delete(':id')
@@ -133,7 +145,10 @@ export class BannerController {
   @ApiResponse({ status: 200, description: 'Banner deleted successfully' })
   @ApiResponse({ status: 404, description: 'Banner not found' })
   @ApiParam({ name: 'id', description: 'Banner ID' })
-  remove(@Param('id') id: string) {
-    return this.bannerService.remove(id);
+  async remove(@Param('id') id: string) {
+    const result = await this.bannerService.remove(id);
+    await this.cacheManager.del('banners_all');
+    await this.cacheManager.del(`/banner/${id}`);
+    return result;
   }
 }

@@ -1,10 +1,12 @@
 import { Body, Controller, Get, Patch, UploadedFile, UploadedFiles, UseInterceptors, ValidationPipe, UsePipes } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import { StoreConfigurationService } from './store-configuration.service';
 import { UpdateStoreConfigurationDto } from './dto/update-store-configuration.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from 'src/generated/prisma/enums';
+import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.interceptor';
 
 @ApiTags('store-configuration')
 @Controller('store-configuration')
@@ -12,6 +14,9 @@ export class StoreConfigurationController {
   constructor(private readonly storeConfigurationService: StoreConfigurationService) {}
 
   @Get()
+  @UseInterceptors(LoggingCacheInterceptor)
+  @CacheKey('store_config_current')
+  @CacheTTL(30 * 24 * 60 * 60 * 1000) // 30 days
   @ApiOperation({ summary: 'Get current store configuration (public)' })
   @ApiResponse({ status: 200, description: 'Store configuration retrieved successfully' })
   getCurrent() {
