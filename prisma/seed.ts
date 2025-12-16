@@ -31,57 +31,43 @@ async function main() {
 
   console.log('Seed: admin team user created/updated successfully');
 
-  // ===== STORE CONFIGURATION (dados de teste) =====
   const existingConfig = await prisma.storeConfiguration.findFirst();
 
   if (!existingConfig) {
     await prisma.storeConfiguration.create({
       data: {
-        // Controle do Site
         isActive: true,
         maintenanceMode: false,
         maintenanceMessage: 'Estamos em manutenção. Voltamos em breve!',
 
-        // Dados da Loja
         storeName: 'Minha Loja de Cosméticos (Teste)',
         cnpj: '12.345.678/0001-90',
         description: 'Loja de teste para configuração inicial.',
         phone: '(11) 99999-9999',
         whatsapp: '(11) 99999-9999',
 
-        // Identidade Visual
         logoUrl: 'https://placehold.co/300x120?text=Logo+Teste',
         faviconUrl: 'https://placehold.co/32x32',
 
-        // Localização
         googleMapsEmbedUrl: null,
 
-        // Horário de Funcionamento
         businessHours: 'Seg–Sex, 9h às 18h',
 
-        // Email
         contactEmail: 'contato@loja-teste.com',
-        notifyNewOrders: false,
         automaticNewsletter: false,
 
-        // Frete
-        freeShippingEnabled: false,
-        freeShippingValue: null,
-        shippingDeadline: null,
-
-        // Pagamentos
-        creditCardEnabled: true,
-        pixEnabled: true,
-        boletoEnabled: false,
-
-        // SEO
-        seoTitle: 'Minha Loja de Cosméticos (Teste)',
-        seoDescription: 'Configuração inicial de teste da loja.',
         seoKeywords: 'teste, loja, cosméticos',
 
-        // Internacionalização
         currency: 'BRL',
         locale: 'pt-BR',
+
+        socialMedias: {
+          create: [
+            { platform: 'Instagram', url: 'https://instagram.com/minhaloja', isActive: true },
+            { platform: 'Facebook', url: 'https://facebook.com/minhaloja', isActive: true },
+            { platform: 'WhatsApp', url: 'https://wa.me/5511999999999', isActive: true },
+          ],
+        },
       },
     });
 

@@ -1,5 +1,5 @@
-import { IsOptional, IsString, IsBoolean, IsEmail, IsNumber, IsInt, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsBoolean, IsEmail } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateStoreConfigurationDto {
@@ -87,44 +87,6 @@ export class UpdateStoreConfigurationDto {
     @Type(() => Boolean)
     automaticNewsletter?: boolean;
 
-    @ApiProperty({ description: 'Frete grátis habilitado', default: false, required: false })
-    @IsBoolean()
-    @IsOptional()
-    @Type(() => Boolean)
-    freeShippingEnabled?: boolean;
-
-    @ApiProperty({ description: 'Valor para frete grátis', example: 150, required: false })
-    @IsNumber()
-    @IsOptional()
-    @Type(() => Number)
-    @Min(0)
-    freeShippingValue?: number;
-
-    @ApiProperty({ description: 'Prazo de envio em dias', example: 3, required: false })
-    @IsInt()
-    @IsOptional()
-    @Type(() => Number)
-    @Min(0)
-    shippingDeadline?: number;
-
-    @ApiProperty({ description: 'Cartão de crédito habilitado', default: false, required: false })
-    @IsBoolean()
-    @IsOptional()
-    @Type(() => Boolean)
-    creditCardEnabled?: boolean;
-
-    @ApiProperty({ description: 'PIX habilitado', default: false, required: false })
-    @IsBoolean()
-    @IsOptional()
-    @Type(() => Boolean)
-    pixEnabled?: boolean;
-
-    @ApiProperty({ description: 'Boleto habilitado', default: false, required: false })
-    @IsBoolean()
-    @IsOptional()
-    @Type(() => Boolean)
-    boletoEnabled?: boolean;
-
     @ApiProperty({ description: 'Título SEO', required: false })
     @IsString()
     @IsOptional()
@@ -139,6 +101,18 @@ export class UpdateStoreConfigurationDto {
     @IsString()
     @IsOptional()
     seoKeywords?: string;
+
+    @ApiProperty({ description: 'Redes Sociais (JSON array)', required: false, example: '[{"platform":"Instagram","url":"..."}]' })
+    @IsOptional()
+    @Type(() => Object)
+    @Transform(({ value }) => {
+        if (!value || value === '' || value === 'null') return undefined;
+        if (typeof value === 'string') {
+            try { return JSON.parse(value); } catch { return undefined; }
+        }
+        return value;
+    })
+    socialMedias?: any;
 
     @ApiProperty({ description: 'Moeda', example: 'BRL', required: false })
     @IsString()

@@ -14,6 +14,9 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { BannerModule } from './banner/banner.module';
 import { NewsletterModule } from './newsletter/newsletter.module';
 import { StoreConfigurationModule } from './store-configuration/store-configuration.module';
+import { SocialModule } from './social/social.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -26,6 +29,10 @@ import { StoreConfigurationModule } from './store-configuration/store-configurat
       isGlobal: true,
       ttl: 86400,
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 20,
+    }]),
     DatabaseModule,
     ClientModule,
     TeamMembersModule,
@@ -36,8 +43,14 @@ import { StoreConfigurationModule } from './store-configuration/store-configurat
     BannerModule,
     NewsletterModule,
     StoreConfigurationModule,
+    SocialModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule { }

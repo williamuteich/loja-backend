@@ -50,6 +50,15 @@ export class CreateProductDto {
 
   @ApiProperty({ description: 'Additional specs as JSON', required: false, example: { voltage: '110V' } })
   @IsOptional()
+  @ApiProperty({ description: 'Additional specs as JSON', required: false, example: { voltage: '110V' } })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (!value || value === '' || value === 'null') return undefined;
+    if (typeof value === 'string') {
+      try { return JSON.parse(value); } catch { return undefined; }
+    }
+    return value;
+  })
   specs?: any;
 
   @ApiProperty({ description: 'Brand ID', required: false })
@@ -65,11 +74,13 @@ export class CreateProductDto {
   })
   @IsOptional()
   @Transform(({ value }) => {
-    if (!value || value === '') return undefined;
+    if (!value || value === '' || value === 'null') return undefined; // Handle 'null' string
     if (typeof value === 'string') {
-      if (value.startsWith('[')) {
-        try { return JSON.parse(value); } catch (e) { return value; }
+      // If it looks like an array, try to parse it
+      if (value.trim().startsWith('[')) {
+        try { return JSON.parse(value); } catch (e) { return value; } // Fallback to original value if parse fails (validation will catch it)
       }
+      // If it's a single string (UUID), wrap in array
       return [value];
     }
     return value;
@@ -86,7 +97,7 @@ export class CreateProductDto {
   })
   @IsOptional()
   @Transform(({ value }) => {
-    if (!value || value === '') return undefined;
+    if (!value || value === '' || value === 'null') return undefined;
     if (typeof value === 'string') {
       try { return JSON.parse(value); } catch (e) { return undefined; }
     }

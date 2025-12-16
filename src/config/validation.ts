@@ -6,4 +6,5 @@ export const validationSchema = Joi.object({
   JWT_SECRET: Joi.string().required(),
   JWT_TEAM_EXPIRES_IN: Joi.string().default('1h'),
   DATABASE_URL: Joi.string().required(),
+  CORS_ORIGIN: Joi.string().default('*'),
 });

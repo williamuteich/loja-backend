@@ -124,17 +124,12 @@ CREATE TABLE "StoreConfiguration" (
     "zipCode" TEXT,
     "logoUrl" TEXT,
     "faviconUrl" TEXT,
+    "ogImageUrl" TEXT,
     "googleMapsEmbedUrl" TEXT,
     "businessHours" TEXT,
     "contactEmail" TEXT NOT NULL,
     "notifyNewOrders" BOOLEAN NOT NULL DEFAULT false,
     "automaticNewsletter" BOOLEAN NOT NULL DEFAULT false,
-    "freeShippingEnabled" BOOLEAN NOT NULL DEFAULT false,
-    "freeShippingValue" REAL,
-    "shippingDeadline" INTEGER,
-    "creditCardEnabled" BOOLEAN NOT NULL DEFAULT false,
-    "pixEnabled" BOOLEAN NOT NULL DEFAULT false,
-    "boletoEnabled" BOOLEAN NOT NULL DEFAULT false,
     "seoTitle" TEXT,
     "seoDescription" TEXT,
     "seoKeywords" TEXT,
@@ -142,6 +137,18 @@ CREATE TABLE "StoreConfiguration" (
     "locale" TEXT NOT NULL DEFAULT 'pt-BR',
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "SocialMedia" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "platform" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "storeConfigId" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "SocialMedia_storeConfigId_fkey" FOREIGN KEY ("storeConfigId") REFERENCES "StoreConfiguration" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateIndex

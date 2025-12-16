@@ -10,13 +10,15 @@ export class StoreConfigurationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly fileStorage: IFileStorageService,
-  ) {}
+  ) { }
 
   async getCurrent() {
-    return this.prisma.storeConfiguration.findFirst();
+    return this.prisma.storeConfiguration.findFirst({
+      include: { socialMedias: true },
+    });
   }
 
-  async upsert(dto: UpdateStoreConfigurationDto | CreateStoreConfigurationDto, logoFile?: Express.Multer.File) {
+  async upsert(dto: UpdateStoreConfigurationDto | CreateStoreConfigurationDto, logoFile?: Express.Multer.File, ogImageFile?: Express.Multer.File) {
     const existing = await this.prisma.storeConfiguration.findFirst();
 
     let logoUrl: string | undefined;
@@ -28,20 +30,51 @@ export class StoreConfigurationService {
       logoUrl = await this.fileStorage.save(logoFile, 'store');
     }
 
-    const data = {
+    let ogImageUrl: string | undefined;
+    if (ogImageFile) {
+      if (existing?.ogImageUrl && !existing.ogImageUrl.startsWith('http')) {
+        await this.fileStorage.delete(existing.ogImageUrl);
+      }
+      ogImageUrl = await this.fileStorage.save(ogImageFile, 'store');
+    }
+
+    const data: any = {
       ...dto,
       ...(dto as UpdateStoreConfigurationDto).name && { storeName: (dto as UpdateStoreConfigurationDto).name },
       ...(dto as UpdateStoreConfigurationDto).email && { contactEmail: (dto as UpdateStoreConfigurationDto).email },
       ...(logoUrl && { logoUrl }),
+      ...(ogImageUrl && { ogImageUrl }),
     };
 
-    delete (data as any).name;
-    delete (data as any).email;
+    delete data.name;
+    delete data.email;
+
+    const socialMedias = data.socialMedias;
+    delete data.socialMedias;
+
+    let normalizedSocialMedias: any[] = [];
+    if (socialMedias) {
+      if (Array.isArray(socialMedias)) {
+        normalizedSocialMedias = socialMedias;
+      } else if (typeof socialMedias === 'string') {
+        try { normalizedSocialMedias = JSON.parse(socialMedias); } catch { }
+      }
+    }
 
     try {
       if (!existing) {
         const result = await this.prisma.storeConfiguration.create({
-          data: data as CreateStoreConfigurationDto,
+          data: {
+            ...(data as CreateStoreConfigurationDto),
+            socialMedias: {
+              create: normalizedSocialMedias.map(sm => ({
+                platform: sm.platform,
+                url: sm.url,
+                isActive: sm.isActive ?? true,
+              })),
+            },
+          },
+          include: { socialMedias: true },
         });
         if (!result) {
           throw StoreConfigurationErrors.failedToCreate();
@@ -49,9 +82,25 @@ export class StoreConfigurationService {
         return result;
       }
 
+      if (socialMedias !== undefined) {
+        await this.prisma.socialMedia.deleteMany({ where: { storeConfigId: existing.id } });
+      }
+
       const result = await this.prisma.storeConfiguration.update({
         where: { id: existing.id },
-        data,
+        data: {
+          ...data,
+          ...(socialMedias !== undefined ? {
+            socialMedias: {
+              create: normalizedSocialMedias.map(sm => ({
+                platform: sm.platform,
+                url: sm.url,
+                isActive: sm.isActive ?? true,
+              })),
+            },
+          } : {}),
+        },
+        include: { socialMedias: true },
       });
       if (!result) {
         throw StoreConfigurationErrors.failedToUpdate();
@@ -74,16 +123,16 @@ export class StoreConfigurationService {
 
     try {
       const logoUrl = await this.fileStorage.save(file, 'store');
-      
+
       const result = await this.prisma.storeConfiguration.update({
         where: { id: existing.id },
         data: { logoUrl },
       });
-      
+
       if (!result) {
         throw StoreConfigurationErrors.failedToUploadLogo();
       }
-      
+
       return result;
     } catch (error) {
       if (error instanceof StoreConfigurationErrors) {

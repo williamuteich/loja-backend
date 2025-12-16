@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 export class CreateStoreConfigurationDto {
   @ApiProperty({ description: 'Status do site (ativo/inativo)', default: true, required: false })
@@ -79,44 +79,6 @@ export class CreateStoreConfigurationDto {
   @Type(() => Boolean)
   automaticNewsletter?: boolean;
 
-  @ApiProperty({ description: 'Frete grátis habilitado', default: false, required: false })
-  @IsBoolean()
-  @IsOptional()
-  @Type(() => Boolean)
-  freeShippingEnabled?: boolean;
-
-  @ApiProperty({ description: 'Valor para frete grátis', required: false, example: 150 })
-  @IsNumber()
-  @IsOptional()
-  @Type(() => Number)
-  @Min(0)
-  freeShippingValue?: number | null;
-
-  @ApiProperty({ description: 'Prazo de envio em dias', required: false, example: 3 })
-  @IsInt()
-  @IsOptional()
-  @Type(() => Number)
-  @Min(0)
-  shippingDeadline?: number | null;
-
-  @ApiProperty({ description: 'Pagamento com cartão habilitado', default: false, required: false })
-  @IsBoolean()
-  @IsOptional()
-  @Type(() => Boolean)
-  creditCardEnabled?: boolean;
-
-  @ApiProperty({ description: 'Pagamento com PIX habilitado', default: false, required: false })
-  @IsBoolean()
-  @IsOptional()
-  @Type(() => Boolean)
-  pixEnabled?: boolean;
-
-  @ApiProperty({ description: 'Pagamento com boleto habilitado', default: false, required: false })
-  @IsBoolean()
-  @IsOptional()
-  @Type(() => Boolean)
-  boletoEnabled?: boolean;
-
   @ApiProperty({ description: 'Título SEO padrão', required: false })
   @IsString()
   @IsOptional()
@@ -141,4 +103,16 @@ export class CreateStoreConfigurationDto {
   @IsString()
   @IsOptional()
   locale?: string;
+
+  @ApiProperty({ description: 'Redes Sociais (JSON array)', required: false, example: '[{"platform":"Instagram","url":"..."}]' })
+  @IsOptional()
+  @Type(() => Object)
+  @Transform(({ value }) => {
+    if (!value || value === '' || value === 'null') return undefined; // Handle 'null' string
+    if (typeof value === 'string') {
+      try { return JSON.parse(value); } catch { return undefined; }
+    }
+    return value;
+  })
+  socialMedias?: any;
 }

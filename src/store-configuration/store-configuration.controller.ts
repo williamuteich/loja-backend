@@ -1,17 +1,17 @@
-import { Body, Controller, Get, Patch, UploadedFile, UploadedFiles, UseInterceptors, ValidationPipe, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, Patch, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import { StoreConfigurationService } from './store-configuration.service';
 import { UpdateStoreConfigurationDto } from './dto/update-store-configuration.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from 'src/generated/prisma/enums';
+import { Role } from '../generated/prisma/client';
 import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.interceptor';
 
 @ApiTags('store-configuration')
 @Controller('store-configuration')
 export class StoreConfigurationController {
-  constructor(private readonly storeConfigurationService: StoreConfigurationService) {}
+  constructor(private readonly storeConfigurationService: StoreConfigurationService) { }
 
   @Get()
   @UseInterceptors(LoggingCacheInterceptor)
@@ -27,13 +27,13 @@ export class StoreConfigurationController {
   @Auth(Role.ADMIN)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'logo', maxCount: 1 },
+    { name: 'ogImage', maxCount: 1 },
   ]))
   @ApiOperation({ summary: 'Update store configuration (ADMIN only)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
-      required: [],
       properties: {
         name: { type: 'string', example: 'My Store' },
         cnpj: { type: 'string', example: '12.345.678/0001-90' },
@@ -51,12 +51,6 @@ export class StoreConfigurationController {
         businessHours: { type: 'string', example: 'Seg–Sex, 9h às 18h' },
         notifyNewOrders: { type: 'boolean', example: false },
         automaticNewsletter: { type: 'boolean', example: false },
-        freeShippingEnabled: { type: 'boolean', example: false },
-        freeShippingValue: { type: 'number', example: 150 },
-        shippingDeadline: { type: 'number', example: 3 },
-        creditCardEnabled: { type: 'boolean', example: true },
-        pixEnabled: { type: 'boolean', example: true },
-        boletoEnabled: { type: 'boolean', example: false },
         seoTitle: { type: 'string', example: 'Minha Loja' },
         seoDescription: { type: 'string', example: 'Descrição da loja' },
         seoKeywords: { type: 'string', example: 'loja, cosméticos' },
@@ -67,6 +61,16 @@ export class StoreConfigurationController {
           format: 'binary',
           description: 'Logo image file',
         },
+        ogImage: {
+          type: 'string',
+          format: 'binary',
+          description: 'Open Graph image file',
+        },
+        socialMedias: {
+          type: 'string',
+          description: 'JSON array of social media objects',
+          example: '[{"platform":"Instagram","url":"..."}]',
+        },
       },
     },
   })
@@ -76,9 +80,10 @@ export class StoreConfigurationController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   update(
     @Body() dto: UpdateStoreConfigurationDto,
-    @UploadedFiles() files: { logo?: Express.Multer.File[] },
+    @UploadedFiles() files: { logo?: Express.Multer.File[], ogImage?: Express.Multer.File[] },
   ) {
     const logo = files?.logo?.[0];
-    return this.storeConfigurationService.upsert(dto, logo);
+    const ogImage = files?.ogImage?.[0];
+    return this.storeConfigurationService.upsert(dto, logo, ogImage);
   }
 }

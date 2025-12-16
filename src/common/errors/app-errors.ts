@@ -298,3 +298,33 @@ export class StoreConfigurationErrors {
   }
 }
 
+
+export class SocialMediaErrors {
+  static notFound(id: string) {
+    return new NotFoundException({
+      code: 'SOCIAL_MEDIA_NOT_FOUND',
+      message: `Social media with ID ${id} not found`,
+    });
+  }
+
+  static failedToCreate() {
+    return new InternalServerErrorException({
+      code: 'SOCIAL_MEDIA_FAILED_TO_CREATE',
+      message: 'Failed to create social media',
+    });
+  }
+
+  static failedToUpdate() {
+    return new InternalServerErrorException({
+      code: 'SOCIAL_MEDIA_FAILED_TO_UPDATE',
+      message: 'Failed to update social media',
+    });
+  }
+
+  static failedToDelete() {
+    return new InternalServerErrorException({
+      code: 'SOCIAL_MEDIA_FAILED_TO_DELETE',
+      message: 'Failed to delete social media',
+    });
+  }
+}

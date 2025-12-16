@@ -40,65 +40,65 @@ enum Role {
 }
 
 model Product {
-  id            String           @id @default(uuid())
+  id            String   @id @default(uuid())
   title         String
   description   String?
   price         Float
   discountPrice Float?
   specs         Json?
-  createdAt     DateTime        @default(now())
+  createdAt     DateTime @default(now())
 
-  variants      ProductVariant[]
+  variants ProductVariant[]
 
-  images        ProductImage[]
-  categories    ProductCategory[]
+  images     ProductImage[]
+  categories ProductCategory[]
 
-  brand         Brand?           @relation(fields: [brandId], references: [id])
-  brandId       String?
+  brand   Brand?  @relation(fields: [brandId], references: [id])
+  brandId String?
 }
 
 model ProductVariant {
-  id         String   @id @default(uuid())
-  color      String
-  quantity   Int      @default(0)
+  id       String @id @default(uuid())
+  color    String
+  quantity Int    @default(0)
 
-  product    Product  @relation(fields: [productId], references: [id])
-  productId  String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ProductImage {
-  id         String   @id @default(uuid())
-  url        String
+  id  String @id @default(uuid())
+  url String
 
-  product    Product  @relation(fields: [productId], references: [id])
-  productId  String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ProductCategory {
-  product     Product  @relation(fields: [productId], references: [id])
-  productId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
 
-  category    Category @relation(fields: [categoryId], references: [id])
-  categoryId  String
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
 
   @@id([productId, categoryId])
 }
 
 model Category {
-  id          String            @id @default(uuid())
-  name        String            @unique
+  id          String   @id @default(uuid())
+  name        String   @unique
   description String?
   imageUrl    String?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  products    ProductCategory[]
+  products ProductCategory[]
 }
 
 model Brand {
@@ -110,33 +110,35 @@ model Brand {
 }
 
 model banner {
-  id String @id @default(uuid())
-  title String
-  subtitle String?
-  linkUrl String?
-  imageDesktop String?
-  imageMobile String?
+  id                String   @id @default(uuid())
+  title             String
+  subtitle          String?
+  linkUrl           String?
+  imageDesktop      String?
+  imageMobile       String?
   resolutionDesktop String?
-  resolutionMobile String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  resolutionMobile  String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model newsletter {
-  id         String   @id @default(uuid())
-  email      String   @unique
-  whatsapp   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(uuid())
+  email     String   @unique
+  whatsapp  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model StoreConfiguration {
   id String @id @default(uuid())
 
   // ===== Controle do Site =====
-  isActive           Boolean @default(true)   // liga/desliga o site
-  maintenanceMode    Boolean @default(false)  // modo manutenção
-  maintenanceMessage String?                  // mensagem exibida na manutenção
+  isActive           Boolean @default(true) // liga/desliga o site
+  maintenanceMode    Boolean @default(false) // modo manutenção
+  maintenanceMessage String? // mensagem exibida na manutenção
+
+  socialMedias SocialMedia[]
 
   // ===== Dados da Loja =====
   storeName   String
@@ -150,29 +152,30 @@ model StoreConfiguration {
   zipCode     String?
 
   // ===== Identidade Visual =====
-  logoUrl     String?
-  faviconUrl  String?
+  logoUrl    String?
+  faviconUrl String?
+  ogImageUrl String? // Imagem de compartilhamento (Open Graph)
 
   // ===== Localização =====
-  googleMapsEmbedUrl String?                  // src do iframe do Google Maps
+  googleMapsEmbedUrl String? // src do iframe do Google Maps
 
   // ===== Horário de Funcionamento =====
-  businessHours String?                       // Ex: "Seg–Sex, 9h às 18h"
+  businessHours String? // Ex: "Seg–Sex, 9h às 18h"
 
   // ===== Email =====
-  contactEmail         String
-  notifyNewOrders      Boolean @default(false)
+  contactEmail        String
+  notifyNewOrders     Boolean @default(false)
   automaticNewsletter Boolean @default(false)
 
   // ===== Frete =====
-  freeShippingEnabled Boolean @default(false)
-  freeShippingValue   Float?
-  shippingDeadline    Int?                    // prazo em dias
+  //freeShippingEnabled Boolean @default(false)
+  //freeShippingValue   Float?
+  //shippingDeadline    Int?                    // prazo em dias
 
   // ===== Pagamentos =====
-  creditCardEnabled Boolean @default(false)
-  pixEnabled        Boolean @default(false)
-  boletoEnabled     Boolean @default(false)
+  //creditCardEnabled Boolean @default(false)
+  //pixEnabled        Boolean @default(false)
+  //boletoEnabled     Boolean @default(false)
 
   // ===== SEO =====
   seoTitle       String?
@@ -187,3 +190,15 @@ model StoreConfiguration {
   updatedAt DateTime @updatedAt
 }
 
+model SocialMedia {
+  id       String  @id @default(uuid())
+  platform String
+  url      String
+  isActive Boolean @default(true)
+
+  storeConfig   StoreConfiguration @relation(fields: [storeConfigId], references: [id])
+  storeConfigId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

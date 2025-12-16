@@ -24,34 +24,9 @@ export class ProductService {
 
     const allImageUrls = [...(imageUrls ?? []), ...uploadedUrls];
 
-    const normalizedCategoryIds: string[] = Array.isArray(categoryIds)
-      ? categoryIds
-      : categoryIds
-        ? [categoryIds]
-        : [];
+    const normalizedCategoryIds: string[] = categoryIds || [];
 
-    let normalizedVariants: any[] = [];
-    if (Array.isArray(variants)) {
-      normalizedVariants = variants.map((item) => {
-        if (typeof item === 'string') {
-          try {
-            return JSON.parse(item);
-          } catch {
-            return null;
-          }
-        }
-        return item;
-      }).filter(Boolean) as any[];
-    } else if (typeof variants === 'string') {
-      try {
-        const parsed = JSON.parse(variants);
-        normalizedVariants = Array.isArray(parsed) ? parsed : [parsed];
-      } catch {
-        normalizedVariants = [];
-      }
-    } else if (variants && typeof variants === 'object') {
-      normalizedVariants = [variants];
-    }
+    const normalizedVariants: any[] = variants || [];
 
     return this.prisma.product.create({
       data: {
@@ -134,28 +109,7 @@ export class ProductService {
     }
 
     if (variants !== undefined) {
-      let normalizedVariants: any[] = [];
-      if (Array.isArray(variants)) {
-        normalizedVariants = variants.map((item) => {
-          if (typeof item === 'string') {
-            try {
-              return JSON.parse(item);
-            } catch {
-              return null;
-            }
-          }
-          return item;
-        }).filter(Boolean) as any[];
-      } else if (typeof variants === 'string') {
-        try {
-          const parsed = JSON.parse(variants);
-          normalizedVariants = Array.isArray(parsed) ? parsed : [parsed];
-        } catch {
-          normalizedVariants = [];
-        }
-      } else if (variants && typeof variants === 'object') {
-        normalizedVariants = [variants];
-      }
+      const normalizedVariants: any[] = variants || [];
 
       await this.prisma.productVariant.deleteMany({ where: { productId: id } });
       data.variants = {
@@ -167,11 +121,7 @@ export class ProductService {
     }
 
     if (categoryIds !== undefined) {
-      const normalizedCategoryIds: string[] = Array.isArray(categoryIds)
-        ? categoryIds
-        : categoryIds
-          ? [categoryIds]
-          : [];
+      const normalizedCategoryIds: string[] = categoryIds || [];
 
       await this.prisma.productCategory.deleteMany({ where: { productId: id } });
       data.categories = {
