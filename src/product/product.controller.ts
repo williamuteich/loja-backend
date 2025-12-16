@@ -65,7 +65,7 @@ export class ProductController {
   @Get()
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheKey('products_all')
-  @CacheTTL(3600000)
+  @CacheTTL(24 * 60 * 60 * 1000) // 1 day
   @ApiOperation({ summary: 'Get all products (public)' })
   @ApiResponse({ status: 200, description: 'Return all products' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -77,7 +77,7 @@ export class ProductController {
 
   @Get(':id')
   @UseInterceptors(LoggingCacheInterceptor)
-  @CacheTTL(3600000)
+  @CacheTTL(24 * 60 * 60 * 1000) // 1 day
   @ApiOperation({ summary: 'Get a product by ID (public)' })
   @ApiResponse({ status: 200, description: 'Return the product' })
   @ApiResponse({ status: 404, description: 'Product not found' })

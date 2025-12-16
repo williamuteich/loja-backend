@@ -19,7 +19,19 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Loja Backend API')
-    .setDescription('API documentation for Loja Backend')
+    .setDescription(`
+      API documentation for Loja Backend
+      
+      **Getting Started:**
+      
+      1. Configure .env file with required environment variables
+      2. Run: npx prisma generate
+      3. Run: npx prisma migrate dev
+      4. Run: npm run seed (creates admin user: teste@gmail.com / teste123)
+      5. Use admin credentials to access private routes
+      
+      **Authentication:** Use JWT token from login endpoint in Bearer format
+    `)
     .setVersion('1.0')
     .addBearerAuth(
       {

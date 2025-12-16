@@ -3,6 +3,7 @@ import { PrismaService } from '../database/prisma.service';
 import { IFileStorageService } from '../common/interfaces/IFileStorageService';
 import { CreateStoreConfigurationDto } from './dto/create-store-configuration.dto';
 import { UpdateStoreConfigurationDto } from './dto/update-store-configuration.dto';
+import { StoreConfigurationErrors } from '../common/errors/app-errors';
 
 @Injectable()
 export class StoreConfigurationService {
@@ -39,18 +40,28 @@ export class StoreConfigurationService {
 
     try {
       if (!existing) {
-        return await this.prisma.storeConfiguration.create({
+        const result = await this.prisma.storeConfiguration.create({
           data: data as CreateStoreConfigurationDto,
         });
+        if (!result) {
+          throw StoreConfigurationErrors.failedToCreate();
+        }
+        return result;
       }
 
-      return await this.prisma.storeConfiguration.update({
+      const result = await this.prisma.storeConfiguration.update({
         where: { id: existing.id },
         data,
       });
+      if (!result) {
+        throw StoreConfigurationErrors.failedToUpdate();
+      }
+      return result;
     } catch (error) {
-      console.error("Store service upsert - Database error:", error);
-      throw error;
+      if (error instanceof StoreConfigurationErrors) {
+        throw error;
+      }
+      throw StoreConfigurationErrors.failedToUpdate();
     }
   }
 
@@ -58,14 +69,27 @@ export class StoreConfigurationService {
     const existing = await this.prisma.storeConfiguration.findFirst();
 
     if (!existing) {
-      throw new Error('Store configuration not found');
+      throw StoreConfigurationErrors.notFound();
     }
 
-    const logoUrl = await this.fileStorage.save(file, 'store');
-
-    return this.prisma.storeConfiguration.update({
-      where: { id: existing.id },
-      data: { logoUrl },
-    });
+    try {
+      const logoUrl = await this.fileStorage.save(file, 'store');
+      
+      const result = await this.prisma.storeConfiguration.update({
+        where: { id: existing.id },
+        data: { logoUrl },
+      });
+      
+      if (!result) {
+        throw StoreConfigurationErrors.failedToUploadLogo();
+      }
+      
+      return result;
+    } catch (error) {
+      if (error instanceof StoreConfigurationErrors) {
+        throw error;
+      }
+      throw StoreConfigurationErrors.failedToUploadLogo();
+    }
   }
 }

@@ -9,21 +9,21 @@ const adapter = new PrismaBetterSqlite3({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const plainPassword = 'peganobreu123';
+  const plainPassword = 'teste123';
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
   await prisma.team.upsert({
-    where: { email: 'williamuteich14@gmail.com' },
+    where: { email: 'teste@gmail.com' },
     update: {
-      name: 'william',
-      lastName: 'uteich',
+      name: 'wesley',
+      lastName: 'rodrigues',
       password: hashedPassword,
       role: Role.ADMIN,
     },
     create: {
-      name: 'william',
-      lastName: 'uteich',
-      email: 'williamuteich14@gmail.com',
+      name: 'wesley',
+      lastName: 'rodrigues',
+      email: 'teste@gmail.com',
       password: hashedPassword,
       role: Role.ADMIN,
     },

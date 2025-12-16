@@ -33,7 +33,7 @@ export class BrandController {
     @Get()
     @UseInterceptors(LoggingCacheInterceptor)
     @CacheKey('brands_all')
-    @CacheTTL(3600000)
+    @CacheTTL(24 * 60 * 60 * 1000) // 1 day
     @ApiOperation({ summary: 'Get all brands (public)' })
     @ApiResponse({ status: 200, description: 'Return all brands' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -45,7 +45,7 @@ export class BrandController {
 
     @Get(':id')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheTTL(3600000)
+    @CacheTTL(24 * 60 * 60 * 1000) // 1 day
     @ApiOperation({ summary: 'Get a brand by ID (public)' })
     @ApiResponse({ status: 200, description: 'Return the brand' })
     @ApiResponse({ status: 404, description: 'Brand not found' })

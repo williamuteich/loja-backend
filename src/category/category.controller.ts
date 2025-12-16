@@ -50,7 +50,7 @@ export class CategoryController {
     @Get()
     @UseInterceptors(LoggingCacheInterceptor)
     @CacheKey('categories_all')
-    @CacheTTL(3600000)
+    @CacheTTL(24 * 60 * 60 * 1000) // 1 day
     @ApiOperation({ summary: 'Get all categories (public)' })
     @ApiResponse({ status: 200, description: 'Return all categories' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -62,7 +62,7 @@ export class CategoryController {
 
     @Get(':id')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheTTL(3600000)
+    @CacheTTL(24 * 60 * 60 * 1000) // 1 day
     @ApiOperation({ summary: 'Get a category by ID (public)' })
     @ApiResponse({ status: 200, description: 'Return the category' })
     @ApiResponse({ status: 404, description: 'Category not found' })
