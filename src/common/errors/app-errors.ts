@@ -170,3 +170,94 @@ export class BrandErrors {
     });
   }
 }
+
+export class BannerErrors {
+  static notFound(id: string) {
+    return new NotFoundException({
+      code: 'BANNER_NOT_FOUND',
+      message: `Banner with ID ${id} not found`,
+    });
+  }
+
+  static failedToCreate() {
+    return new InternalServerErrorException({
+      code: 'BANNER_FAILED_TO_CREATE',
+      message: 'Failed to create banner',
+    });
+  }
+
+  static failedToUpdate() {
+    return new InternalServerErrorException({
+      code: 'BANNER_FAILED_TO_UPDATE',
+      message: 'Failed to update banner',
+    });
+  }
+
+  static failedToDelete() {
+    return new InternalServerErrorException({
+      code: 'BANNER_FAILED_TO_DELETE',
+      message: 'Failed to delete banner',
+    });
+  }
+}
+
+export class NewsLetterErrors {
+  static notFound(id: string) {
+    return new NotFoundException({
+      code: 'NEWSLETTER_NOT_FOUND',
+      message: `Newsletter with ID ${id} not found`,
+    });
+  }
+
+  static failedToCreate() {
+    return new InternalServerErrorException({
+      code: 'NEWSLETTER_FAILED_TO_CREATE',
+      message: 'Failed to create newsletter',
+    });
+  }
+
+  static failedToUpdate() {
+    return new InternalServerErrorException({
+      code: 'NEWSLETTER_FAILED_TO_UPDATE',
+      message: 'Failed to update newsletter',
+    });
+  }
+
+  static failedToDelete() {
+    return new InternalServerErrorException({
+      code: 'NEWSLETTER_FAILED_TO_DELETE',
+      message: 'Failed to delete newsletter',
+    });
+  }
+}
+
+export class ProductErrors {
+  static notFound(id: string) {
+    return new NotFoundException({
+      code: 'PRODUCT_NOT_FOUND',
+      message: `Product with ID ${id} not found`,
+    });
+  }
+
+  static failedToCreate() {
+    return new InternalServerErrorException({
+      code: 'PRODUCT_FAILED_TO_CREATE',
+      message: 'Failed to create product',
+    });
+  }
+
+  static failedToUpdate() {
+    return new InternalServerErrorException({
+      code: 'PRODUCT_FAILED_TO_UPDATE',
+      message: 'Failed to update product',
+    });
+  }
+
+  static failedToDelete() {
+    return new InternalServerErrorException({
+      code: 'PRODUCT_FAILED_TO_DELETE',
+      message: 'Failed to delete product',
+    });
+  }
+}
+

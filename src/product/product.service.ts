@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from '../database/prisma.service';
 import { IFileStorageService } from '../common/interfaces/IFileStorageService';
+import { ProductErrors } from '../common/errors/app-errors';
 
 @Injectable()
 export class ProductService {
@@ -110,7 +111,7 @@ export class ProductService {
     });
 
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw ProductErrors.notFound(id);
     }
 
     return product;
@@ -120,7 +121,7 @@ export class ProductService {
     const existing = await this.prisma.product.findUnique({ where: { id }, select: { id: true } });
 
     if (!existing) {
-      throw new NotFoundException('Product not found');
+      throw ProductErrors.notFound(id);
     }
 
     const { variants, categoryIds, imageUrls, brandId, ...rest } = dto;
@@ -203,7 +204,7 @@ export class ProductService {
     const existing = await this.prisma.product.findUnique({ where: { id }, select: { id: true } });
 
     if (!existing) {
-      throw new NotFoundException('Product not found');
+      throw ProductErrors.notFound;
     }
 
     await this.prisma.productVariant.deleteMany({ where: { productId: id } });

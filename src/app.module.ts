@@ -11,6 +11,8 @@ import { BrandModule } from './brand/brand.module';
 import { ProductModule } from './product/product.module';
 
 import { CacheModule } from '@nestjs/cache-manager';
+import { BannerModule } from './banner/banner.module';
+import { NewsletterModule } from './newsletter/newsletter.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { CacheModule } from '@nestjs/cache-manager';
     CategoryModule,
     BrandModule,
     ProductModule,
+    BannerModule,
+    NewsletterModule,
   ],
   controllers: [],
   providers: [],
