@@ -22,11 +22,11 @@ export class AuthController {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
+            path: '/',
             maxAge: 24 * 60 * 60 * 1000,
         });
 
-        // Temporariamente expomos o token também no corpo para facilitar uso no Swagger Authorize
-        return { user: result.user, accessToken: result.access_token };
+        return { user: result.user };
     }
 
     @Post('team/login')
@@ -35,17 +35,20 @@ export class AuthController {
     @ApiOkResponse({ description: 'Login successful', type: LoginResponseDto })
     @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
     async loginTeamMember(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+        console.log('Login attempt for team member:', loginDto.email);
         const result = await this.authService.loginTeamMember(loginDto.email, loginDto.password);
 
+        console.log('Setting cookie for user:', result.user.id);
         res.cookie('access_token', result.access_token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'lax',
+            path: '/',
             maxAge: 60 * 60 * 1000,
         });
 
-        // Temporariamente expomos o token também no corpo para facilitar uso no Swagger Authorize
-        return { user: result.user, accessToken: result.access_token };
+
+        return { user: result.user };
     }
 
     @Post('logout')
