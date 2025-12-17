@@ -65,7 +65,7 @@ export class ProductController {
   @Get()
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheKey('products_all')
-  @CacheTTL(24 * 60 * 60 * 1000) // 1 day
+  @CacheTTL(24 * 60 * 60 * 1000)
   @ApiOperation({ summary: 'Get all products (public)' })
   @ApiResponse({ status: 200, description: 'Return all products' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -77,13 +77,25 @@ export class ProductController {
 
   @Get(':id')
   @UseInterceptors(LoggingCacheInterceptor)
-  @CacheTTL(24 * 60 * 60 * 1000) // 1 day
+  @CacheTTL(24 * 60 * 60 * 1000)
   @ApiOperation({ summary: 'Get a product by ID (public)' })
   @ApiResponse({ status: 200, description: 'Return the product' })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiParam({ name: 'id', description: 'Product ID' })
   findOne(@Param('id') id: string) {
     return this.productService.findOne(id);
+  }
+
+
+  @Get(':id/related')
+  @UseInterceptors(LoggingCacheInterceptor)
+  @CacheTTL(24 * 60 * 60 * 1000)
+  @ApiOperation({ summary: 'Get related products (public)' })
+  @ApiResponse({ status: 200, description: 'Return related products' })
+  @ApiResponse({ status: 404, description: 'Product not found' })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  getRelated(@Param('id') id: string, @Query('limit') limit?: number) {
+    return this.productService.findRelated(id, limit);
   }
 
   @Patch(':id')

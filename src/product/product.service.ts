@@ -163,4 +163,42 @@ export class ProductService {
 
     return this.prisma.product.delete({ where: { id } });
   }
+  async findRelated(id: string, limit: number = 4) {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      select: { categories: { select: { categoryId: true } } },
+    });
+
+    if (!product) {
+      throw ProductErrors.notFound(id);
+    }
+
+    const categoryIds = product.categories.map((c) => c.categoryId);
+
+    if (categoryIds.length === 0) {
+      return [];
+    }
+
+    return this.prisma.product.findMany({
+      where: {
+        AND: [
+          { id: { not: id } },
+          {
+            categories: {
+              some: {
+                categoryId: { in: categoryIds },
+              },
+            },
+          },
+        ],
+      },
+      take: limit,
+      include: {
+        images: true,
+        variants: true,
+        brand: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

@@ -88,6 +88,7 @@ model ProductCategory {
   categoryId String
 
   @@id([productId, categoryId])
+  @@index([categoryId])
 }
 
 model Category {
