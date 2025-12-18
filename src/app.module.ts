@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { ClientModule } from './client/client.module';
 import { TeamMembersModule } from './team-members/team-members.module';
 import { AuthModule } from './auth/auth.module';
@@ -24,6 +26,10 @@ import { APP_GUARD } from '@nestjs/core';
       isGlobal: true,
       load: [configuration],
       validationSchema,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
     }),
     CacheModule.register({
       isGlobal: true,
