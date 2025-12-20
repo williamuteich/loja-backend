@@ -31,6 +31,13 @@ export class CategoryService {
         return await this.prisma.category.findMany({
             skip,
             take,
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
         });
     }
 

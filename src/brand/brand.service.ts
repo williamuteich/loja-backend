@@ -18,6 +18,13 @@ export class BrandService {
         return await this.prisma.brand.findMany({
             skip,
             take,
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
         });
     }
 
