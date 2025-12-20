@@ -13,10 +13,15 @@ import {
 } from 'class-validator';
 
 export class ProductVariantInputDto {
-  @ApiProperty({ description: 'Color name', example: 'Red' })
+  @ApiProperty({ description: 'Color hex or code', example: '#ffffff' })
   @IsString()
   @IsNotEmpty()
   color: string;
+
+  @ApiProperty({ description: 'Variant display name', example: 'Branco', required: false })
+  @IsString()
+  @IsOptional()
+  name?: string;
 
   @ApiProperty({ description: 'Quantity for this color', example: 10 })
   @IsNumber()
@@ -74,13 +79,11 @@ export class CreateProductDto {
   })
   @IsOptional()
   @Transform(({ value }) => {
-    if (!value || value === '' || value === 'null') return undefined; // Handle 'null' string
+    if (!value || value === '' || value === 'null') return undefined;
     if (typeof value === 'string') {
-      // If it looks like an array, try to parse it
       if (value.trim().startsWith('[')) {
-        try { return JSON.parse(value); } catch (e) { return value; } // Fallback to original value if parse fails (validation will catch it)
+        try { return JSON.parse(value); } catch (e) { return value; }
       }
-      // If it's a single string (UUID), wrap in array
       return [value];
     }
     return value;

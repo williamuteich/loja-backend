@@ -13,6 +13,7 @@ export class ProductService {
   ) { }
 
   async create(dto: CreateProductDto, files?: any[]) {
+
     const { variants, categoryIds, imageUrls, brandId, ...rest } = dto;
 
     let uploadedUrls: string[] = [];
@@ -28,23 +29,28 @@ export class ProductService {
 
     const normalizedVariants: any[] = variants || [];
 
-    return this.prisma.product.create({
-      data: {
-        ...rest,
-        ...(brandId ? { brandId } : {}),
-        variants: {
-          create: normalizedVariants.map((v) => ({
-            color: v.color,
-            quantity: v.quantity,
-          })),
-        },
-        images: {
-          create: allImageUrls.map((url) => ({ url })),
-        },
-        categories: {
-          create: normalizedCategoryIds.map((categoryId) => ({ categoryId })),
-        },
+    const data: any = {
+      ...rest,
+      ...(brandId ? { brandId } : {}),
+      variants: {
+        create: normalizedVariants.map((v) => ({
+          ...(v.name ? { name: v.name } : {}),
+          color: v.color,
+          quantity: v.quantity,
+        })),
       },
+      images: {
+        create: allImageUrls.map((url) => ({ url })),
+      },
+      categories: {
+        create: normalizedCategoryIds.map((categoryId) => ({ categoryId })),
+      },
+    };
+
+    console.log('[PRODUCT][CREATE] prisma data payload:', data);
+
+    return this.prisma.product.create({
+      data,
       include: {
         variants: true,
         images: true,
@@ -99,6 +105,9 @@ export class ProductService {
       throw ProductErrors.notFound(id);
     }
 
+    console.log('[PRODUCT][UPDATE] id:', id, 'incoming DTO:', dto);
+    console.log('[PRODUCT][UPDATE] id:', id, 'incoming files length:', files?.length ?? 0);
+
     const { variants, categoryIds, imageUrls, brandId, ...rest } = dto;
 
     const data: any = { ...rest };
@@ -114,6 +123,7 @@ export class ProductService {
       await this.prisma.productVariant.deleteMany({ where: { productId: id } });
       data.variants = {
         create: normalizedVariants.map((v) => ({
+          ...(v.name ? { name: v.name } : {}),
           color: v.color,
           quantity: v.quantity,
         })),
@@ -135,6 +145,8 @@ export class ProductService {
         create: imageUrls.map((url) => ({ url })),
       };
     }
+
+    console.log('[PRODUCT][UPDATE] id:', id, 'prisma data payload:', data);
 
     return this.prisma.product.update({
       where: { id },
