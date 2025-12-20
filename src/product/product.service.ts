@@ -47,8 +47,6 @@ export class ProductService {
       },
     };
 
-    console.log('[PRODUCT][CREATE] prisma data payload:', data);
-
     return this.prisma.product.create({
       data,
       include: {
@@ -99,14 +97,17 @@ export class ProductService {
   }
 
   async update(id: string, dto: UpdateProductDto, files?: any[]) {
-    const existing = await this.prisma.product.findUnique({ where: { id }, select: { id: true } });
+    const existing = await this.prisma.product.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        images: { select: { url: true } },
+      },
+    });
 
     if (!existing) {
       throw ProductErrors.notFound(id);
     }
-
-    console.log('[PRODUCT][UPDATE] id:', id, 'incoming DTO:', dto);
-    console.log('[PRODUCT][UPDATE] id:', id, 'incoming files length:', files?.length ?? 0);
 
     const { variants, categoryIds, imageUrls, brandId, ...rest } = dto;
 
@@ -139,11 +140,27 @@ export class ProductService {
       };
     }
 
-    if (imageUrls !== undefined) {
+    let uploadedUrls: string[] = [];
+    if (files && files.length > 0) {
+      uploadedUrls = await Promise.all(
+        files.map((file) => this.fileStorage.save(file, 'products')),
+      );
+    }
+
+    if (imageUrls !== undefined || uploadedUrls.length > 0) {
+      const previousUrls = existing.images?.map((img) => img.url) ?? [];
+      const allImageUrls = [...(imageUrls ?? []), ...uploadedUrls];
+
+      // arquivos que existiam antes e nao estarao mais associados ao produto
+      const toDelete = previousUrls.filter((url) => !allImageUrls.includes(url));
+
       await this.prisma.productImage.deleteMany({ where: { productId: id } });
       data.images = {
-        create: imageUrls.map((url) => ({ url })),
+        create: allImageUrls.map((url) => ({ url })),
       };
+
+      // remove fisicamente os arquivos nao utilizados
+      await Promise.all(toDelete.map((url) => this.fileStorage.delete(url)));
     }
 
     console.log('[PRODUCT][UPDATE] id:', id, 'prisma data payload:', data);

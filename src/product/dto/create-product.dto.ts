@@ -117,7 +117,13 @@ export class CreateProductDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  @Transform(({ value }) => (!value || value === '' ? undefined : value))
+  @Transform(({ value }) => {
+    if (!value || value === '' || value === 'null') return undefined;
+    if (typeof value === 'string') {
+      try { return JSON.parse(value); } catch { return undefined; }
+    }
+    return value;
+  })
   imageUrls?: string[];
 
   @ApiProperty({ required: false, type: 'string', format: 'binary' })
