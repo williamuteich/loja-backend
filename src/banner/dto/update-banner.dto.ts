@@ -1,5 +1,5 @@
-import { IsOptional, IsString } from 'class-validator'
-import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString, IsBoolean } from 'class-validator'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateBannerDto {
     @ApiProperty({
@@ -46,4 +46,13 @@ export class UpdateBannerDto {
     @IsString()
     @IsOptional()
     resolutionMobile?: string
+
+    @ApiPropertyOptional({
+        description: 'Banner active status',
+        example: true,
+        required: false,
+    })
+    @IsBoolean()
+    @IsOptional()
+    isActive?: boolean
 }

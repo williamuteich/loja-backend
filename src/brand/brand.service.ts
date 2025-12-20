@@ -53,6 +53,13 @@ export class BrandService {
         return await this.prisma.brand.update({
             where: { id },
             data: updateBrandDto,
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
         });
     }
 

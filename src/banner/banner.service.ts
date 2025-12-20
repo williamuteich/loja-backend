@@ -79,6 +79,9 @@ export class BannerService {
     if (updateBannerDto.resolutionMobile !== undefined && updateBannerDto.resolutionMobile !== '') {
       data.resolutionMobile = updateBannerDto.resolutionMobile;
     }
+    if (updateBannerDto.isActive !== undefined) {
+      data.isActive = updateBannerDto.isActive;
+    }
 
     if (files?.desktopImage && files.desktopImage.length > 0) {
       if (existing.imageDesktop) {

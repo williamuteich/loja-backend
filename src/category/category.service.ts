@@ -66,6 +66,13 @@ export class CategoryService {
         return await this.prisma.category.update({
             where: { id },
             data: updateCategoryDto,
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
         });
     }
 

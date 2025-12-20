@@ -1,4 +1,10 @@
-import { PartialType } from '@nestjs/swagger';
+import { PartialType, ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateProductDto } from './create-product.dto';
+import { IsBoolean, IsOptional } from 'class-validator';
 
-export class UpdateProductDto extends PartialType(CreateProductDto) {}
+export class UpdateProductDto extends PartialType(CreateProductDto) {
+  @ApiPropertyOptional({ description: 'Product active status', example: true })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
+}

@@ -18,6 +18,7 @@ model team {
   email     String   @unique
   password  String
   role      Role     @default(COLLABORATOR)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -29,6 +30,7 @@ model client {
   email     String   @unique
   password  String
   role      Role     @default(CLIENT)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -47,6 +49,7 @@ model Product {
   discountPrice Float?
   specs         Json?
   createdAt     DateTime @default(now())
+  isActive      Boolean  @default(true)
 
   variants ProductVariant[]
 
@@ -98,6 +101,7 @@ model Category {
   imageUrl    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  isActive    Boolean  @default(true)
 
   products ProductCategory[]
 }
@@ -108,6 +112,7 @@ model Brand {
   products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  isActive  Boolean   @default(true)
 }
 
 model banner {
@@ -121,6 +126,7 @@ model banner {
   resolutionMobile  String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  isActive          Boolean  @default(true)
 }
 
 model newsletter {
