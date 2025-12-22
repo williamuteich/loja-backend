@@ -28,6 +28,23 @@ export class BrandService {
         });
     }
 
+    async findAllPublic(skip: number = 0, take: number = 10) {
+        return await this.prisma.brand.findMany({
+            where: {
+                isActive: true,
+            },
+            skip,
+            take,
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
+        });
+    }
+
     async findOne(id: string) {
         const brand = await this.prisma.brand.findUnique({
             where: { id },

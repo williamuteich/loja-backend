@@ -19,7 +19,7 @@ export class BrandController {
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
     ) { }
 
-    @Post()
+    @Post('admin')
     @Auth(Role.ADMIN)
     @ApiOperation({ summary: 'Create a new brand (ADMIN only)' })
     @ApiResponse({ status: 201, description: 'Brand created successfully' })
@@ -27,17 +27,32 @@ export class BrandController {
     async create(@Body() createBrandDto: CreateBrandDto) {
         const result = await this.brandService.create(createBrandDto);
         await this.cacheManager.del('brands_all');
+        await this.cacheManager.del('brands_public');
         return result;
     }
 
-    @Get()
+    @Get('public')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheKey('brands_all')
-    @CacheTTL(24 * 60 * 60 * 1000) // 1 day
-    @ApiOperation({ summary: 'Get all brands (public)' })
-    @ApiResponse({ status: 200, description: 'Return all brands' })
+    @CacheKey('brands_public')
+    @CacheTTL(24 * 60 * 60 * 1000)
+    @ApiOperation({ summary: 'Get all active brands (public)' })
+    @ApiResponse({ status: 200, description: 'Return all active brands' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
     @ApiQuery({ name: 'take', required: false, type: Number })
+    findAllPublic(@Query() query: PaginationQueryDto) {
+        const { skip = 0, take = 10 } = query;
+        return this.brandService.findAllPublic(skip, take);
+    }
+
+    @Get('admin')
+    @UseInterceptors(LoggingCacheInterceptor)
+    @CacheKey('brands_all')
+    @CacheTTL(24 * 60 * 60 * 1000)
+    @ApiOperation({ summary: 'Get all brands (admin)' })
+    @ApiResponse({ status: 200, description: 'Return all brands (admin)' })
+    @ApiQuery({ name: 'skip', required: false, type: Number })
+    @ApiQuery({ name: 'take', required: false, type: Number })
+    @Auth(Role.ADMIN, Role.COLLABORATOR)
     findAll(@Query() query: PaginationQueryDto) {
         const { skip = 0, take = 10 } = query;
         return this.brandService.findAll(skip, take);
@@ -45,7 +60,7 @@ export class BrandController {
 
     @Get(':id')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheTTL(24 * 60 * 60 * 1000) // 1 day
+    @CacheTTL(24 * 60 * 60 * 1000)
     @ApiOperation({ summary: 'Get a brand by ID (public)' })
     @ApiResponse({ status: 200, description: 'Return the brand' })
     @ApiResponse({ status: 404, description: 'Brand not found' })
@@ -54,7 +69,7 @@ export class BrandController {
         return this.brandService.findOne(id);
     }
 
-    @Patch(':id')
+    @Patch('admin/:id')
     @Auth(Role.ADMIN)
     @ApiOperation({ summary: 'Update a brand (ADMIN only)' })
     @ApiResponse({ status: 200, description: 'Brand updated successfully' })
@@ -63,11 +78,12 @@ export class BrandController {
     async update(@Param('id') id: string, @Body() updateBrandDto: UpdateBrandDto) {
         const result = await this.brandService.update(id, updateBrandDto);
         await this.cacheManager.del('brands_all');
+        await this.cacheManager.del('brands_public');
         await this.cacheManager.del(`/brand/${id}`);
         return result;
     }
 
-    @Delete(':id')
+    @Delete('admin/:id')
     @Auth(Role.ADMIN)
     @ApiOperation({ summary: 'Delete a brand (ADMIN only)' })
     @ApiResponse({ status: 200, description: 'Brand deleted successfully' })
@@ -76,6 +92,7 @@ export class BrandController {
     async remove(@Param('id') id: string) {
         const result = await this.brandService.remove(id);
         await this.cacheManager.del('brands_all');
+        await this.cacheManager.del('brands_public');
         await this.cacheManager.del(`/brand/${id}`);
         return result;
     }
