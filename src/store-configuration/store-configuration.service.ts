@@ -18,32 +18,13 @@ export class StoreConfigurationService {
     });
   }
 
-  async upsert(dto: UpdateStoreConfigurationDto | CreateStoreConfigurationDto, logoFile?: Express.Multer.File, ogImageFile?: Express.Multer.File) {
+  async upsert(dto: UpdateStoreConfigurationDto | CreateStoreConfigurationDto) {
     const existing = await this.prisma.storeConfiguration.findFirst();
-
-    let logoUrl: string | undefined;
-
-    if (logoFile) {
-      if (existing?.logoUrl && !existing.logoUrl.startsWith('http')) {
-        await this.fileStorage.delete(existing.logoUrl);
-      }
-      logoUrl = await this.fileStorage.save(logoFile, 'store');
-    }
-
-    let ogImageUrl: string | undefined;
-    if (ogImageFile) {
-      if (existing?.ogImageUrl && !existing.ogImageUrl.startsWith('http')) {
-        await this.fileStorage.delete(existing.ogImageUrl);
-      }
-      ogImageUrl = await this.fileStorage.save(ogImageFile, 'store');
-    }
 
     const data: any = {
       ...dto,
       ...(dto as UpdateStoreConfigurationDto).name && { storeName: (dto as UpdateStoreConfigurationDto).name },
       ...(dto as UpdateStoreConfigurationDto).email && { contactEmail: (dto as UpdateStoreConfigurationDto).email },
-      ...(logoUrl && { logoUrl }),
-      ...(ogImageUrl && { ogImageUrl }),
     };
 
     delete data.name;
@@ -111,34 +92,6 @@ export class StoreConfigurationService {
         throw error;
       }
       throw StoreConfigurationErrors.failedToUpdate();
-    }
-  }
-
-  async updateLogo(file: Express.Multer.File) {
-    const existing = await this.prisma.storeConfiguration.findFirst();
-
-    if (!existing) {
-      throw StoreConfigurationErrors.notFound();
-    }
-
-    try {
-      const logoUrl = await this.fileStorage.save(file, 'store');
-
-      const result = await this.prisma.storeConfiguration.update({
-        where: { id: existing.id },
-        data: { logoUrl },
-      });
-
-      if (!result) {
-        throw StoreConfigurationErrors.failedToUploadLogo();
-      }
-
-      return result;
-    } catch (error) {
-      if (error instanceof StoreConfigurationErrors) {
-        throw error;
-      }
-      throw StoreConfigurationErrors.failedToUploadLogo();
     }
   }
 }

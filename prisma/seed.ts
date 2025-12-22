@@ -46,9 +46,6 @@ async function main() {
         phone: '(11) 99999-9999',
         whatsapp: '(11) 99999-9999',
 
-        logoUrl: 'https://placehold.co/300x120?text=Logo+Teste',
-        faviconUrl: 'https://placehold.co/32x32',
-
         googleMapsEmbedUrl: null,
 
         businessHours: 'Seg–Sex, 9h às 18h',

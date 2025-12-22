@@ -25,12 +25,12 @@ export class StoreConfigurationController {
 
   @Patch('admin')
   @Auth(Role.ADMIN)
-  @UseInterceptors(FileFieldsInterceptor([
-    { name: 'logo', maxCount: 1 },
-    { name: 'ogImage', maxCount: 1 },
-  ]))
+  // @UseInterceptors(FileFieldsInterceptor([
+  //   { name: 'logo', maxCount: 1 },
+  //   { name: 'ogImage', maxCount: 1 },
+  // ]))
   @ApiOperation({ summary: 'Update store configuration (ADMIN only)' })
-  @ApiConsumes('multipart/form-data')
+  // @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
@@ -56,16 +56,16 @@ export class StoreConfigurationController {
         seoKeywords: { type: 'string', example: 'loja, cosméticos' },
         currency: { type: 'string', example: 'BRL' },
         locale: { type: 'string', example: 'pt-BR' },
-        logo: {
-          type: 'string',
-          format: 'binary',
-          description: 'Logo image file',
-        },
-        ogImage: {
-          type: 'string',
-          format: 'binary',
-          description: 'Open Graph image file',
-        },
+        // logo: {
+        //   type: 'string',
+        //   format: 'binary',
+        //   description: 'Logo image file',
+        // },
+        // ogImage: {
+        //   type: 'string',
+        //   format: 'binary',
+        //   description: 'Open Graph image file',
+        // },
         socialMedias: {
           type: 'string',
           description: 'JSON array of social media objects',
@@ -80,10 +80,10 @@ export class StoreConfigurationController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   update(
     @Body() dto: UpdateStoreConfigurationDto,
-    @UploadedFiles() files: { logo?: Express.Multer.File[], ogImage?: Express.Multer.File[] },
+    // @UploadedFiles() files: { logo?: Express.Multer.File[], ogImage?: Express.Multer.File[] },
   ) {
-    const logo = files?.logo?.[0];
-    const ogImage = files?.ogImage?.[0];
-    return this.storeConfigurationService.upsert(dto, logo, ogImage);
+    // const logo = files?.logo?.[0];
+    // const ogImage = files?.ogImage?.[0];
+    return this.storeConfigurationService.upsert(dto);
   }
 }

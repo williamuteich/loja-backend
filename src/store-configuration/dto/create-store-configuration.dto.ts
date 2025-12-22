@@ -43,15 +43,15 @@ export class CreateStoreConfigurationDto {
   @IsOptional()
   whatsapp?: string;
 
-  @ApiProperty({ description: 'URL do logo', required: false })
-  @IsString()
-  @IsOptional()
-  logoUrl?: string;
+  // @ApiProperty({ description: 'URL do logo', required: false })
+  // @IsString()
+  // @IsOptional()
+  // logoUrl?: string;
 
-  @ApiProperty({ description: 'URL do favicon', required: false })
-  @IsString()
-  @IsOptional()
-  faviconUrl?: string;
+  // @ApiProperty({ description: 'URL do favicon', required: false })
+  // @IsString()
+  // @IsOptional()
+  // faviconUrl?: string;
 
   @ApiProperty({ description: 'Embed do Google Maps', required: false })
   @IsString()

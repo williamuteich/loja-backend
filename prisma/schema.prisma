@@ -160,9 +160,9 @@ model StoreConfiguration {
   zipCode     String?
 
   // ===== Identidade Visual =====
-  logoUrl    String?
-  faviconUrl String?
-  ogImageUrl String? // Imagem de compartilhamento (Open Graph)
+  // logoUrl    String?
+  // faviconUrl String?
+  // ogImageUrl String? // Imagem de compartilhamento (Open Graph)
 
   // ===== Localização =====
   googleMapsEmbedUrl String? // src do iframe do Google Maps
