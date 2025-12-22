@@ -30,7 +30,7 @@ export class BannerController {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  @Post()
+  @Post('admin')
   @Auth(Role.ADMIN)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'desktopImage', maxCount: 1 },
@@ -68,23 +68,38 @@ export class BannerController {
   ) {
     const result = this.bannerService.create(createBannerDto, files);
     this.cacheManager.del('banners_all');
+    this.cacheManager.del('banners_public');
     return result;
   }
 
-  @Get()
+  @Get('public')
+  @UseInterceptors(LoggingCacheInterceptor)
+  @CacheKey('banners_public')
+  @CacheTTL(3600000)
+  @ApiOperation({ summary: 'Get all active banners (public)' })
+  @ApiResponse({ status: 200, description: 'Return all active banners' })
+  @ApiQuery({ name: 'skip', required: false, type: Number })
+  @ApiQuery({ name: 'take', required: false, type: Number })
+  findAllPublic(@Query() query: PaginationQueryDto) {
+    const { skip = 0, take = 10 } = query;
+    return this.bannerService.findAllPublic(skip, take);
+  }
+
+  @Get('admin')
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheKey('banners_all')
   @CacheTTL(3600000)
-  @ApiOperation({ summary: 'Get all banners (public)' })
-  @ApiResponse({ status: 200, description: 'Return all banners' })
+  @ApiOperation({ summary: 'Get all banners (admin)' })
+  @ApiResponse({ status: 200, description: 'Return all banners (admin)' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
   @ApiQuery({ name: 'take', required: false, type: Number })
+  @Auth(Role.ADMIN, Role.COLLABORATOR)
   findAll(@Query() query: PaginationQueryDto) {
     const { skip = 0, take = 10 } = query;
     return this.bannerService.findAll(skip, take);
   }
 
-  @Get(':id')
+  @Get('public/:id')
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheTTL(3600000)
   @ApiOperation({ summary: 'Get a banner by ID (public)' })
@@ -95,7 +110,7 @@ export class BannerController {
     return this.bannerService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch('admin/:id')
   @Auth(Role.ADMIN)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'desktopImage', maxCount: 1 },
@@ -135,11 +150,12 @@ export class BannerController {
   ) {
     const result = await this.bannerService.update(id, updateBannerDto, files);
     await this.cacheManager.del('banners_all');
+    await this.cacheManager.del('banners_public');
     await this.cacheManager.del(`/banner/${id}`);
     return result;
   }
 
-  @Delete(':id')
+  @Delete('admin/:id')
   @Auth(Role.ADMIN)
   @ApiOperation({ summary: 'Delete a banner (ADMIN only)' })
   @ApiResponse({ status: 200, description: 'Banner deleted successfully' })
@@ -148,6 +164,7 @@ export class BannerController {
   async remove(@Param('id') id: string) {
     const result = await this.bannerService.remove(id);
     await this.cacheManager.del('banners_all');
+    await this.cacheManager.del('banners_public');
     await this.cacheManager.del(`/banner/${id}`);
     return result;
   }

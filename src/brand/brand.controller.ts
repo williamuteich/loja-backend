@@ -58,7 +58,7 @@ export class BrandController {
         return this.brandService.findAll(skip, take);
     }
 
-    @Get(':id')
+    @Get('public/:id')
     @UseInterceptors(LoggingCacheInterceptor)
     @CacheTTL(24 * 60 * 60 * 1000)
     @ApiOperation({ summary: 'Get a brand by ID (public)' })

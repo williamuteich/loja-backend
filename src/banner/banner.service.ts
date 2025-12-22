@@ -40,6 +40,17 @@ export class BannerService {
     })
   }
 
+  async findAllPublic(skip: number = 0, take: number = 10) {
+    return await this.prisma.banner.findMany({
+      where: {
+        isActive: true,
+      },
+      skip,
+      take,
+      orderBy: { createdAt: 'desc' },
+    })
+  }
+
   async findOne(id: string) {
     const banner = await this.prisma.banner.findUnique({
       where: { id },

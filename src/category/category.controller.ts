@@ -75,7 +75,7 @@ export class CategoryController {
         return this.categoryService.findAll(skip, take);
     }
 
-    @Get(':id')
+    @Get('public/:id')
     @UseInterceptors(LoggingCacheInterceptor)
     @CacheTTL(24 * 60 * 60 * 1000)
     @ApiOperation({ summary: 'Get a category by ID (public)' })
