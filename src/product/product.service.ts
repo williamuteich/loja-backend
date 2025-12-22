@@ -151,7 +151,6 @@ export class ProductService {
       const previousUrls = existing.images?.map((img) => img.url) ?? [];
       const allImageUrls = [...(imageUrls ?? []), ...uploadedUrls];
 
-      // arquivos que existiam antes e nao estarao mais associados ao produto
       const toDelete = previousUrls.filter((url) => !allImageUrls.includes(url));
 
       await this.prisma.productImage.deleteMany({ where: { productId: id } });
@@ -159,11 +158,9 @@ export class ProductService {
         create: allImageUrls.map((url) => ({ url })),
       };
 
-      // remove fisicamente os arquivos nao utilizados
       await Promise.all(toDelete.map((url) => this.fileStorage.delete(url)));
     }
 
-    console.log('[PRODUCT][UPDATE] id:', id, 'prisma data payload:', data);
 
     return this.prisma.product.update({
       where: { id },
