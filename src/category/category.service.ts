@@ -41,6 +41,23 @@ export class CategoryService {
         });
     }
 
+    async findAllPublic(skip: number = 0, take: number = 10) {
+        return await this.prisma.category.findMany({
+            where: {
+                isActive: true,
+            },
+            skip,
+            take,
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
+        });
+    }
+
     async findOne(id: string) {
         const category = await this.prisma.category.findUnique({
             where: { id },

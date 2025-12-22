@@ -20,7 +20,7 @@ export class CategoryController {
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
     ) { }
 
-    @Post()
+    @Post('admin')
     @Auth(Role.ADMIN)
     @UseInterceptors(FileInterceptor('file'))
     @ApiOperation({ summary: 'Create a new category (ADMIN only)' })
@@ -44,17 +44,32 @@ export class CategoryController {
     ) {
         const result = await this.categoryService.create(createCategoryDto, file);
         await this.cacheManager.del('categories_all');
+        await this.cacheManager.del('categories_public');
         return result;
     }
 
-    @Get()
+    @Get('public')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheKey('categories_all')
-    @CacheTTL(24 * 60 * 60 * 1000) // 1 day
-    @ApiOperation({ summary: 'Get all categories (public)' })
-    @ApiResponse({ status: 200, description: 'Return all categories' })
+    @CacheKey('categories_public')
+    @CacheTTL(24 * 60 * 60 * 1000)
+    @ApiOperation({ summary: 'Get all active categories (public)' })
+    @ApiResponse({ status: 200, description: 'Return all active categories' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
     @ApiQuery({ name: 'take', required: false, type: Number })
+    findAllPublic(@Query() query: PaginationQueryDto) {
+        const { skip = 0, take = 10 } = query;
+        return this.categoryService.findAllPublic(skip, take);
+    }
+
+    @Get('admin')
+    @UseInterceptors(LoggingCacheInterceptor)
+    @CacheKey('categories_all')
+    @CacheTTL(24 * 60 * 60 * 1000) 
+    @ApiOperation({ summary: 'Get all categories (admin)' })
+    @ApiResponse({ status: 200, description: 'Return all categories (admin)' })
+    @ApiQuery({ name: 'skip', required: false, type: Number })
+    @ApiQuery({ name: 'take', required: false, type: Number })
+    @Auth(Role.ADMIN, Role.COLLABORATOR)
     findAll(@Query() query: PaginationQueryDto) {
         const { skip = 0, take = 10 } = query;
         return this.categoryService.findAll(skip, take);
@@ -62,7 +77,7 @@ export class CategoryController {
 
     @Get(':id')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheTTL(24 * 60 * 60 * 1000) // 1 day
+    @CacheTTL(24 * 60 * 60 * 1000)
     @ApiOperation({ summary: 'Get a category by ID (public)' })
     @ApiResponse({ status: 200, description: 'Return the category' })
     @ApiResponse({ status: 404, description: 'Category not found' })
@@ -71,7 +86,7 @@ export class CategoryController {
         return this.categoryService.findOne(id);
     }
 
-    @Patch(':id')
+    @Patch('admin/:id')
     @Auth(Role.ADMIN)
     @ApiOperation({ summary: 'Update a category (ADMIN only)' })
     @ApiResponse({ status: 200, description: 'Category updated successfully' })
@@ -80,11 +95,12 @@ export class CategoryController {
     async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
         const result = await this.categoryService.update(id, updateCategoryDto);
         await this.cacheManager.del('categories_all');
+        await this.cacheManager.del('categories_public');
         await this.cacheManager.del(`/category/${id}`);
         return result;
     }
 
-    @Delete(':id')
+    @Delete('admin/:id')
     @Auth(Role.ADMIN)
     @ApiOperation({ summary: 'Delete a category (ADMIN only)' })
     @ApiResponse({ status: 200, description: 'Category deleted successfully' })
@@ -93,11 +109,12 @@ export class CategoryController {
     async remove(@Param('id') id: string) {
         const result = await this.categoryService.remove(id);
         await this.cacheManager.del('categories_all');
+        await this.cacheManager.del('categories_public');
         await this.cacheManager.del(`/category/${id}`);
         return result;
     }
 
-    @Post(':id/image')
+    @Post('admin/:id/image')
     @Auth(Role.ADMIN)
     @UseInterceptors(FileInterceptor('file'))
     @ApiOperation({ summary: 'Upload category image (ADMIN only)' })
@@ -119,6 +136,7 @@ export class CategoryController {
     async uploadImage(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
         const result = await this.categoryService.updateImage(id, file);
         await this.cacheManager.del('categories_all');
+        await this.cacheManager.del('categories_public');
         await this.cacheManager.del(`/category/${id}`);
         return result;
     }
