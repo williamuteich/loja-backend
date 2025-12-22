@@ -76,6 +76,25 @@ export class ProductService {
     });
   }
 
+  async findAllPublic(skip: number = 0, take: number = 10) {
+    return this.prisma.product.findMany({
+      where: {
+        isActive: true,
+      },
+      skip,
+      take,
+      include: {
+        variants: true,
+        images: true,
+        categories: {
+          include: { category: true },
+        },
+        brand: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findOne(id: string) {
     const product = await this.prisma.product.findUnique({
       where: { id },

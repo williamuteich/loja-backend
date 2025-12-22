@@ -13,17 +13,17 @@ import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.in
 export class StoreConfigurationController {
   constructor(private readonly storeConfigurationService: StoreConfigurationService) { }
 
-  @Get()
+  @Get('public')
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheKey('store_config_current')
-  @CacheTTL(30 * 24 * 60 * 60 * 1000) // 30 days
+  @CacheTTL(30 * 24 * 60 * 60 * 1000) 
   @ApiOperation({ summary: 'Get current store configuration (public)' })
   @ApiResponse({ status: 200, description: 'Store configuration retrieved successfully' })
   getCurrent() {
     return this.storeConfigurationService.getCurrent();
   }
 
-  @Patch()
+  @Patch('admin')
   @Auth(Role.ADMIN)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'logo', maxCount: 1 },

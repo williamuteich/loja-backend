@@ -6,6 +6,8 @@ import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { CacheKey, CacheTTL, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.interceptor';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { Role } from 'src/generated/prisma/enums';
 
 @Controller('newsletter')
 export class NewsletterController {
@@ -14,14 +16,15 @@ export class NewsletterController {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  @Post()
+  @Post('public')
   async create(@Body() createNewsletterDto: CreateNewsletterDto) {
     const result = await this.newsletterService.create(createNewsletterDto);
     await this.cacheManager.del('newsletters_all');
     return result;
   }
 
-  @Get()
+  @Get('admin')
+  @Auth(Role.ADMIN, Role.COLLABORATOR)
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheKey('newsletters_all')
   @CacheTTL(3600000)
@@ -30,14 +33,16 @@ export class NewsletterController {
     return this.newsletterService.findAll(skip, take);
   }
 
-  @Get(':id')
+  @Get('admin/:id')
+  @Auth(Role.ADMIN, Role.COLLABORATOR)
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheTTL(3600000)
   findOne(@Param('id') id: string) {
     return this.newsletterService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch('admin/:id')
+  @Auth(Role.ADMIN, Role.COLLABORATOR)
   async update(@Param('id') id: string, @Body() updateNewsletterDto: UpdateNewsletterDto) {
     const result = await this.newsletterService.update(id, updateNewsletterDto);
     await this.cacheManager.del('newsletters_all');
@@ -45,7 +50,8 @@ export class NewsletterController {
     return result;
   }
 
-  @Delete(':id')
+  @Delete('admin/:id')
+  @Auth(Role.ADMIN)
   async remove(@Param('id') id: string) {
     const result = await this.newsletterService.remove(id);
     await this.cacheManager.del('newsletters_all');

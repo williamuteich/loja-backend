@@ -14,7 +14,7 @@ export class SocialController {
   constructor(private readonly socialService: SocialService) { }
 
   @Auth(Role.ADMIN)
-  @Post()
+  @Post('admin')
   @ApiOperation({ summary: 'Create a new social media link' })
   @ApiResponse({ status: 201, description: 'Social media created successfully' })
   @ApiResponse({ status: 404, description: 'Store configuration not found' })
@@ -22,7 +22,7 @@ export class SocialController {
     return this.socialService.create(createSocialDto);
   }
 
-  @Get()
+  @Get('public')
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheKey('social_media_all')
   @CacheTTL(30 * 24 * 60 * 60 * 1000)
@@ -31,7 +31,7 @@ export class SocialController {
     return this.socialService.findAll();
   }
 
-  @Get(':id')
+  @Get('public/:id')
   @CacheTTL(30 * 24 * 60 * 60 * 1000)
   @ApiOperation({ summary: 'Get a social media link by ID' })
   @ApiResponse({ status: 200, description: 'Return the social media link' })
@@ -41,7 +41,7 @@ export class SocialController {
   }
 
   @Auth(Role.ADMIN)
-  @Patch(':id')
+  @Patch('admin/:id')
   @ApiOperation({ summary: 'Update a social media link' })
   @ApiResponse({ status: 200, description: 'Social media updated successfully' })
   @ApiResponse({ status: 404, description: 'Social media not found' })
@@ -50,7 +50,7 @@ export class SocialController {
   }
 
   @Auth(Role.ADMIN)
-  @Delete(':id')
+  @Delete('admin/:id')
   @ApiOperation({ summary: 'Delete a social media link' })
   @ApiResponse({ status: 200, description: 'Social media deleted successfully' })
   @ApiResponse({ status: 404, description: 'Social media not found' })

@@ -19,7 +19,7 @@ export class TeamMembersController {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) { }
 
-  @Post()
+  @Post('admin')
   @Auth(Role.ADMIN)
   @ApiOperation({ summary: 'Create a new team member (ADMIN only)' })
   @ApiResponse({ status: 201, description: 'Team member created successfully' })
@@ -30,7 +30,7 @@ export class TeamMembersController {
     return result;
   }
 
-  @Get()
+  @Get('admin')
   @Auth(Role.ADMIN, Role.COLLABORATOR)
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheKey('team_members_all')
@@ -44,7 +44,7 @@ export class TeamMembersController {
     return this.teamMembersService.findAll(skip, take);
   }
 
-  @Get(':id')
+  @Get('admin/:id')
   @Auth(Role.ADMIN, Role.COLLABORATOR)
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheTTL(3600000)
@@ -59,7 +59,7 @@ export class TeamMembersController {
     return this.teamMembersService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch('admin/:id')
   @Auth(Role.ADMIN, Role.COLLABORATOR)
   @ApiOperation({ summary: 'Update a team member (own data or ADMIN)' })
   @ApiResponse({ status: 200, description: 'Team member updated successfully' })
@@ -75,7 +75,7 @@ export class TeamMembersController {
     return result;
   }
 
-  @Delete(':id')
+  @Delete('admin/:id')
   @Auth(Role.ADMIN)
   @ApiOperation({ summary: 'Delete a team member (ADMIN only)' })
   @ApiResponse({ status: 200, description: 'Team member deleted successfully' })

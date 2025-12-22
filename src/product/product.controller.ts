@@ -20,7 +20,7 @@ export class ProductController {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) { }
 
-  @Post()
+  @Post('admin')
   @Auth(Role.ADMIN)
   @UseInterceptors(FilesInterceptor('files'))
   @ApiOperation({ summary: 'Create a new product (ADMIN only)' })
@@ -59,23 +59,38 @@ export class ProductController {
   ) {
     const result = await this.productService.create(createProductDto, files);
     await this.cacheManager.del('products_all');
+    await this.cacheManager.del('products_public');
     return result;
   }
 
-  @Get()
+  @Get('public')
+  @UseInterceptors(LoggingCacheInterceptor)
+  @CacheKey('products_public')
+  @CacheTTL(24 * 60 * 60 * 1000)
+  @ApiOperation({ summary: 'Get all active products (public)' })
+  @ApiResponse({ status: 200, description: 'Return all active products' })
+  @ApiQuery({ name: 'skip', required: false, type: Number })
+  @ApiQuery({ name: 'take', required: false, type: Number })
+  findAllPublic(@Query() query: PaginationQueryDto) {
+    const { skip = 0, take = 10 } = query;
+    return this.productService.findAllPublic(skip, take);
+  }
+
+  @Get('admin')
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheKey('products_all')
   @CacheTTL(24 * 60 * 60 * 1000)
-  @ApiOperation({ summary: 'Get all products (public)' })
-  @ApiResponse({ status: 200, description: 'Return all products' })
+  @ApiOperation({ summary: 'Get all products (admin)' })
+  @ApiResponse({ status: 200, description: 'Return all products (admin)' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
   @ApiQuery({ name: 'take', required: false, type: Number })
+  @Auth(Role.ADMIN, Role.COLLABORATOR)
   findAll(@Query() query: PaginationQueryDto) {
     const { skip = 0, take = 10 } = query;
     return this.productService.findAll(skip, take);
   }
 
-  @Get(':id')
+  @Get('public/:id')
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheTTL(24 * 60 * 60 * 1000)
   @ApiOperation({ summary: 'Get a product by ID (public)' })
@@ -87,7 +102,7 @@ export class ProductController {
   }
 
 
-  @Get(':id/related')
+  @Get('public/:id/related')
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheTTL(24 * 60 * 60 * 1000)
   @ApiOperation({ summary: 'Get related products (public)' })
@@ -98,7 +113,7 @@ export class ProductController {
     return this.productService.findRelated(id, limit);
   }
 
-  @Patch(':id')
+  @Patch('admin/:id')
   @Auth(Role.ADMIN)
   @UseInterceptors(FilesInterceptor('files'))
   @ApiOperation({ summary: 'Update a product (ADMIN only)' })
@@ -139,11 +154,12 @@ export class ProductController {
   ) {
     const result = await this.productService.update(id, updateProductDto, files);
     await this.cacheManager.del('products_all');
+    await this.cacheManager.del('products_public');
     await this.cacheManager.del(`/product/${id}`);
     return result;
   }
 
-  @Delete(':id')
+  @Delete('admin/:id')
   @Auth(Role.ADMIN)
   @ApiOperation({ summary: 'Delete a product (ADMIN only)' })
   @ApiResponse({ status: 200, description: 'Product deleted successfully' })
@@ -152,6 +168,7 @@ export class ProductController {
   async remove(@Param('id') id: string) {
     const result = await this.productService.remove(id);
     await this.cacheManager.del('products_all');
+    await this.cacheManager.del('products_public');
     await this.cacheManager.del(`/product/${id}`);
     return result;
   }

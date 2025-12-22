@@ -19,7 +19,7 @@ export class ClientController {
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
     ) { }
 
-    @Post()
+    @Post('admin')
     @Auth(Role.ADMIN)
     @ApiOperation({ summary: 'Create a new client (ADMIN only)' })
     @ApiResponse({ status: 201, description: 'The client has been successfully created.' })
@@ -30,7 +30,7 @@ export class ClientController {
         return result;
     }
 
-    @Get()
+    @Get('admin')
     @Auth(Role.ADMIN, Role.COLLABORATOR)
     @UseInterceptors(LoggingCacheInterceptor)
     @CacheKey('clients_all')
@@ -44,7 +44,7 @@ export class ClientController {
         return this.clientService.findAll(skip, take);
     }
 
-    @Get(':id')
+    @Get('admin/:id')
     @Auth(Role.ADMIN, Role.COLLABORATOR, Role.CLIENT)
     @UseInterceptors(LoggingCacheInterceptor)
     @CacheTTL(3600000)
@@ -59,7 +59,7 @@ export class ClientController {
         return this.clientService.findOne(id);
     }
 
-    @Patch(':id')
+    @Patch('admin/:id')
     @Auth(Role.ADMIN, Role.CLIENT)
     @ApiOperation({ summary: 'Update a client (own data or ADMIN)' })
     @ApiResponse({ status: 200, description: 'The client has been successfully updated.' })
