@@ -1,17 +1,20 @@
-import { Body, Controller, Get, Patch, UploadedFiles, UseInterceptors } from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
-import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { Body, Controller, Get, Inject, Patch, UseInterceptors } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { CacheKey, CacheTTL, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { StoreConfigurationService } from './store-configuration.service';
 import { UpdateStoreConfigurationDto } from './dto/update-store-configuration.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../generated/prisma/client';
 import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.interceptor';
+import { Cache } from 'cache-manager';
 
 @ApiTags('store-configuration')
 @Controller('store-configuration')
 export class StoreConfigurationController {
-  constructor(private readonly storeConfigurationService: StoreConfigurationService) { }
+  constructor(
+    private readonly storeConfigurationService: StoreConfigurationService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) { }
 
   @Get('public')
   @UseInterceptors(LoggingCacheInterceptor)
@@ -19,8 +22,9 @@ export class StoreConfigurationController {
   @CacheTTL(30 * 24 * 60 * 60 * 1000) 
   @ApiOperation({ summary: 'Get current store configuration (public)' })
   @ApiResponse({ status: 200, description: 'Store configuration retrieved successfully' })
-  getCurrent() {
-    return this.storeConfigurationService.getCurrent();
+  async getCurrent() {
+    const result = await this.storeConfigurationService.getCurrent();
+    return result;
   }
 
   @Patch('admin')
@@ -45,6 +49,7 @@ export class StoreConfigurationController {
         city: { type: 'string', example: 'São Paulo' },
         state: { type: 'string', example: 'SP' },
         zipCode: { type: 'string', example: '01234-567' },
+        googleMapsEmbedUrl: { type: 'string', example: 'https://www.google.com/maps/embed?...', description: 'src do iframe do Google Maps' },
         isActive: { type: 'boolean', example: true },
         maintenanceMode: { type: 'boolean', example: false },
         maintenanceMessage: { type: 'string', example: 'Under maintenance' },
@@ -78,12 +83,12 @@ export class StoreConfigurationController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  update(
+  async update(
     @Body() dto: UpdateStoreConfigurationDto,
     // @UploadedFiles() files: { logo?: Express.Multer.File[], ogImage?: Express.Multer.File[] },
   ) {
-    // const logo = files?.logo?.[0];
-    // const ogImage = files?.ogImage?.[0];
-    return this.storeConfigurationService.upsert(dto);
+    const result = await this.storeConfigurationService.upsert(dto);
+    await this.cacheManager.del('store_config_current');
+    return result;
   }
 }

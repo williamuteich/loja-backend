@@ -70,6 +70,11 @@ export class UpdateStoreConfigurationDto {
     @IsOptional()
     maintenanceMessage?: string;
 
+    @ApiProperty({ description: 'Embed do Google Maps (src do iframe)', required: false })
+    @IsString()
+    @IsOptional()
+    googleMapsEmbedUrl?: string;
+
     @ApiProperty({ description: 'Horário de funcionamento', example: 'Seg–Sex, 9h às 18h', required: false })
     @IsString()
     @IsOptional()
