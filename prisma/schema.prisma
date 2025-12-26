@@ -143,7 +143,6 @@ model StoreConfiguration {
   id String @id @default(uuid())
 
   // ===== Controle do Site =====
-  isActive           Boolean @default(true) // liga/desliga o site
   maintenanceMode    Boolean @default(false) // modo manutenção
   maintenanceMessage String? // mensagem exibida na manutenção
 

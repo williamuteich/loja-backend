@@ -99,4 +99,28 @@ export class ClientService {
             }
         });
     }
+
+    async remove(id: string) {
+        const existing = await this.prisma.client.findUnique({
+            where: { id, role: Role.CLIENT },
+            select: { id: true },
+        });
+
+        if (!existing) {
+            throw ClientErrors.notFound(id);
+        }
+
+        return await this.prisma.client.delete({
+            where: { id },
+            select: {
+                id: true,
+                name: true,
+                lastName: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+    }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Query, Request, ForbiddenException, UseInterceptors, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Query, Request, ForbiddenException, UseInterceptors, Inject, Delete } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
@@ -70,6 +70,19 @@ export class ClientController {
             throw new ForbiddenException('You can only update your own data');
         }
         const result = await this.clientService.update(id, updateClientDto);
+        await this.cacheManager.del('clients_all');
+        await this.cacheManager.del(`/client/${id}`);
+        return result;
+    }
+
+    @Delete('admin/:id')
+    @Auth(Role.ADMIN)
+    @ApiOperation({ summary: 'Delete a client (ADMIN only)' })
+    @ApiResponse({ status: 200, description: 'The client has been successfully deleted.' })
+    @ApiResponse({ status: 404, description: 'Client not found.' })
+    @ApiParam({ name: 'id', description: 'Client ID' })
+    async remove(@Param('id') id: string) {
+        const result = await this.clientService.remove(id);
         await this.cacheManager.del('clients_all');
         await this.cacheManager.del(`/client/${id}`);
         return result;
