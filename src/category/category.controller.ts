@@ -62,6 +62,19 @@ export class CategoryController {
         return this.categoryService.findAllPublic(skip, take);
     }
 
+    @Get('public/home')
+    @UseInterceptors(LoggingCacheInterceptor)
+    @CacheKey('categories_public_home')
+    @CacheTTL(24 * 60 * 60 * 1000)
+    @ApiOperation({ summary: 'Get all active categories flagged to show on home (public)' })
+    @ApiResponse({ status: 200, description: 'Return all active categories with isHome=true' })
+    @ApiQuery({ name: 'skip', required: false, type: Number })
+    @ApiQuery({ name: 'take', required: false, type: Number })
+    findAllHome(@Query() query: PaginationQueryDto) {
+        const { skip = 0, take = 10 } = query;
+        return this.categoryService.findAllHome(skip, take);
+    }
+
     @Get('admin')
     @UseInterceptors(LoggingCacheInterceptor)
     @CacheKey('categories_all')

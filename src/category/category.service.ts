@@ -27,6 +27,24 @@ export class CategoryService {
         });
     }
 
+    async findAllHome(skip: number = 0, take: number = 10) {
+        return await this.prisma.category.findMany({
+            where: {
+                isActive: true,
+                isHome: true,
+            },
+            skip,
+            take,
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
+        });
+    }
+
     async findAll(skip: number = 0, take: number = 10) {
         return await this.prisma.category.findMany({
             skip,
@@ -45,7 +63,6 @@ export class CategoryService {
         return await this.prisma.category.findMany({
             where: {
                 isActive: true,
-                isHome: true,
             },
             skip,
             take,
