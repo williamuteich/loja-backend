@@ -13,24 +13,25 @@ import { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
-    @Post('client/login')
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Client login' })
-    @ApiOkResponse({ description: 'Login successful', type: LoginResponseDto })
-    @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-    async loginClient(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
-        const result = await this.authService.loginClient(loginDto.email, loginDto.password);
+    //REMOVER FUTURAMENTE PARA LOGIN DE USUARIO.
+    //@Post('client/login')
+    //@HttpCode(HttpStatus.OK)
+    //@ApiOperation({ summary: 'Client login' })
+    //@ApiOkResponse({ description: 'Login successful', type: LoginResponseDto })
+    //@ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+    //async loginClient(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    //    const result = await this.authService.loginClient(loginDto.email, loginDto.password);
 
-        res.cookie('access_token', result.access_token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            path: '/',
-            maxAge: 24 * 60 * 60 * 1000,
-        });
+    //    res.cookie('access_token', result.access_token, {
+    //        httpOnly: true,
+    //        secure: process.env.NODE_ENV === 'production',
+    //        sameSite: 'strict',
+    //        path: '/',
+    //        maxAge: 24 * 60 * 60 * 1000,
+    //    });
 
-        return { user: result.user };
-    }
+    //    return { user: result.user };
+    //}
 
     @Post('team/login')
     @HttpCode(HttpStatus.OK)

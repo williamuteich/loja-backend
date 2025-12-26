@@ -12,40 +12,41 @@ export class AuthService {
         private readonly prisma: PrismaService,
     ) { }
 
-    async loginClient(email: string, password: string) {
-        const client = await this.prisma.client.findUnique({
-            where: { email }
-        });
+    //REMOVER FUTURAMENTE O COMENTARIO PARA LOGIN DE USUARIOS.
+    //async loginClient(email: string, password: string) {
+    //    const client = await this.prisma.client.findUnique({
+    //        where: { email }
+    //    });
 
-        if (!client) {
-            throw AuthErrors.unauthorized('Invalid credentials');
-        }
+    //    if (!client) {
+    //        throw AuthErrors.unauthorized('Invalid credentials');
+    //    }
 
-        const isPasswordValid = await this.hashService.compare(password, client.password);
+    //    const isPasswordValid = await this.hashService.compare(password, client.password);
 
-        if (!isPasswordValid) {
-            throw AuthErrors.unauthorized('Invalid credentials');
-        }
+    //    if (!isPasswordValid) {
+    //        throw AuthErrors.unauthorized('Invalid credentials');
+    //    }
 
-        const { password: _, ...userWithoutPassword } = client;
+    //    const { password: _, ...userWithoutPassword } = client;
 
-        const payload = {
-            sub: userWithoutPassword.id,
-            email: userWithoutPassword.email,
-            role: userWithoutPassword.role
-        };
+    //    const payload = {
+    //        sub: userWithoutPassword.id,
+    //        email: userWithoutPassword.email,
+    //        role: userWithoutPassword.role
+    //    };
 
-        const accessToken = await this.jwtService.sign(payload);
+    //    const accessToken = await this.jwtService.sign(payload);
 
-        if (!accessToken) {
-            throw AuthErrors.unauthorized('Invalid credentials');
-        }
+    //    if (!accessToken) {
+    //        throw AuthErrors.unauthorized('Invalid credentials');
+    //    }
 
-        return {
-            access_token: accessToken,
-            user: userWithoutPassword
-        };
-    }
+    //    return {
+    //        access_token: accessToken,
+    //        user: userWithoutPassword
+    //    };
+    //}
 
     async loginTeamMember(email: string, password: string) {
         const teamMember = await this.prisma.team.findUnique({
