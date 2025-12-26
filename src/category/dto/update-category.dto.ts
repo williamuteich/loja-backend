@@ -8,4 +8,9 @@ export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ description: 'Whether this category should be shown on home', example: false })
+  @IsBoolean()
+  @IsOptional()
+  isHome?: boolean;
 }

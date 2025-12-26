@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateCategoryDto {
     @ApiProperty({ description: 'Category name', example: 'Eletrônicos' })
@@ -13,4 +13,9 @@ export class CreateCategoryDto {
     @IsOptional()
     @Length(3, 255)
     description?: string;
+
+    @ApiPropertyOptional({ description: 'Whether this category should be shown on home', example: false })
+    @IsBoolean()
+    @IsOptional()
+    isHome?: boolean;
 }

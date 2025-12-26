@@ -45,6 +45,7 @@ export class CategoryService {
         return await this.prisma.category.findMany({
             where: {
                 isActive: true,
+                isHome: true,
             },
             skip,
             take,
@@ -82,7 +83,10 @@ export class CategoryService {
 
         return await this.prisma.category.update({
             where: { id },
-            data: updateCategoryDto,
+            // DTO e Prisma agora usam o mesmo nome de campo: isHome
+            data: {
+                ...updateCategoryDto,
+            },
             include: {
                 _count: {
                     select: {

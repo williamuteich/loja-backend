@@ -31,6 +31,7 @@ export class CategoryController {
             properties: {
                 name: { type: 'string', example: 'Eletrônicos' },
                 description: { type: 'string', example: 'Description of the category' },
+                isHome: { type: 'boolean', example: false, description: 'Whether this category should be shown on home' },
                 file: { type: 'string', format: 'binary' },
             },
             required: ['name'],
