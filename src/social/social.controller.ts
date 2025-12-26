@@ -25,6 +25,7 @@ export class SocialController {
   async create(@Body() createSocialDto: CreateSocialDto) {
     const result = await this.socialService.create(createSocialDto);
     await this.cacheManager.del('social_media_all');
+    await this.cacheManager.del('store_config_current');
     return result;
   }
 
@@ -55,6 +56,7 @@ export class SocialController {
     const result = await this.socialService.update(id, updateSocialDto);
     await this.cacheManager.del('social_media_all');
     await this.cacheManager.del(`/social/${id}`);
+    await this.cacheManager.del('store_config_current');
     return result;
   }
 
@@ -67,6 +69,7 @@ export class SocialController {
     const result = await this.socialService.remove(id);
     await this.cacheManager.del('social_media_all');
     await this.cacheManager.del(`/social/${id}`);
+    await this.cacheManager.del('store_config_current');
     return result;
   }
 }
