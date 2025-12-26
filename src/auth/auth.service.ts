@@ -84,6 +84,27 @@ export class AuthService {
         };
     }
 
+    async getCurrentUser(userId: string, role: string) {
+        let user;
+
+        if (role === 'ADMIN' || role === 'COLLABORATOR') {
+            user = await this.prisma.team.findUnique({
+                where: { id: userId }
+            });
+        } else if (role === 'CLIENT') {
+            user = await this.prisma.client.findUnique({
+                where: { id: userId }
+            });
+        }
+
+        if (!user) {
+            throw AuthErrors.userNotAuthenticated();
+        }
+
+        const { password: _, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+    }
+
     async logout() {
         return { message: 'Logged out successfully' };
     }

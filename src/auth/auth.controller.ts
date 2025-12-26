@@ -1,9 +1,12 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Res } from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import type { Response } from 'express';
 import { ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { Auth } from './decorators/auth.decorator';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -49,6 +52,15 @@ export class AuthController {
 
 
         return { user: result.user };
+    }
+
+    @Get('me')
+    @Auth()
+    @ApiOperation({ summary: 'Get current authenticated user' })
+    @ApiOkResponse({ description: 'Current user information' })
+    async getCurrentUser(@CurrentUser() user: JwtPayload) {
+        const currentUser = await this.authService.getCurrentUser(user.sub, user.role);
+        return currentUser;
     }
 
     @Post('logout')
