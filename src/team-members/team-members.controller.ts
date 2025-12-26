@@ -66,9 +66,17 @@ export class TeamMembersController {
   @ApiResponse({ status: 404, description: 'Team member not found' })
   @ApiParam({ name: 'id', description: 'Team member ID' })
   async update(@Param('id') id: string, @Body() updateTeamMemberDto: UpdateTeamMemberDto, @Request() req) {
-    if (req.user.role !== Role.ADMIN && req.user.id !== id) {
+    const isAdmin = req.user.role === Role.ADMIN;
+    const isOwnAccount = req.user.id === id;
+
+    if (!isAdmin && !isOwnAccount) {
       throw new ForbiddenException('You can only update your own data');
     }
+
+    if (!isAdmin && updateTeamMemberDto.role) {
+      throw new ForbiddenException('You are not allowed to change roles');
+    }
+
     const result = await this.teamMembersService.update(id, updateTeamMemberDto);
     await this.cacheManager.del('team_members_all');
     await this.cacheManager.del(`/team-members/${id}`);
