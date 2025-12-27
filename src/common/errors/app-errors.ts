@@ -307,6 +307,13 @@ export class SocialMediaErrors {
     });
   }
 
+  static alreadyExists() {
+    return new ConflictException({
+      code: 'SOCIAL_MEDIA_ALREADY_EXISTS',
+      message: 'Social media already exists',
+    });
+  }
+
   static failedToCreate() {
     return new InternalServerErrorException({
       code: 'SOCIAL_MEDIA_FAILED_TO_CREATE',

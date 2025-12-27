@@ -19,12 +19,19 @@ export class CategoryService {
             imageUrl = await this.fileStorageService.save(file, 'categories');
         }
 
-        return await this.prisma.category.create({
-            data: {
-                ...createCategoryDto,
-                ...(imageUrl ? { imageUrl } : {}),
-            },
-        });
+        try {
+            return await this.prisma.category.create({
+                data: {
+                    ...createCategoryDto,
+                    ...(imageUrl ? { imageUrl } : {}),
+                },
+            });
+        } catch (error) {
+            if ((error as any).code === 'P2002') {
+                throw CategoryErrors.nameAlreadyExists();
+            }
+            throw CategoryErrors.failedToCreate();
+        }
     }
 
     async findAllHome(skip: number = 0, take: number = 10) {
@@ -98,20 +105,27 @@ export class CategoryService {
             throw CategoryErrors.notFound(id);
         }
 
-        return await this.prisma.category.update({
-            where: { id },
-            // DTO e Prisma agora usam o mesmo nome de campo: isHome
-            data: {
-                ...updateCategoryDto,
-            },
-            include: {
-                _count: {
-                    select: {
-                        products: true,
+        try {
+            return await this.prisma.category.update({
+                where: { id },
+                // DTO e Prisma agora usam o mesmo nome de campo: isHome
+                data: {
+                    ...updateCategoryDto,
+                },
+                include: {
+                    _count: {
+                        select: {
+                            products: true,
+                        },
                     },
                 },
-            },
-        });
+            });
+        } catch (error) {
+            if ((error as any).code === 'P2002') {
+                throw CategoryErrors.nameAlreadyExists();
+            }
+            throw CategoryErrors.failedToUpdate();
+        }
     }
 
     async remove(id: string) {

@@ -15,22 +15,28 @@ export class TeamMembersService {
 
   async create(createTeamMemberDto: CreateTeamMemberDto) {
     const hashedPassword = await this.hashService.hash(createTeamMemberDto.password);
-
-    return await this.prisma.team.create({
-      data: {
-        ...createTeamMemberDto,
-        password: hashedPassword,
-      },
-      select: {
-        id: true,
-        name: true,
-        lastName: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true
+    try {
+      return await this.prisma.team.create({
+        data: {
+          ...createTeamMemberDto,
+          password: hashedPassword,
+        },
+        select: {
+          id: true,
+          name: true,
+          lastName: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      });
+    } catch (error) {
+      if ((error as any).code === 'P2002') {
+        throw TeamMemberErrors.emailAlreadyExists();
       }
-    });
+      throw TeamMemberErrors.failedToCreate();
+    }
   }
 
   async findAll(skip: number = 0, take: number = 10) {
@@ -80,19 +86,26 @@ export class TeamMembersService {
       throw TeamMemberErrors.notFound(id);
     }
 
-    return await this.prisma.team.update({
-      where: { id },
-      data: updateTeamMemberDto,
-      select: {
-        id: true,
-        name: true,
-        lastName: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true
+    try {
+      return await this.prisma.team.update({
+        where: { id },
+        data: updateTeamMemberDto,
+        select: {
+          id: true,
+          name: true,
+          lastName: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      });
+    } catch (error) {
+      if ((error as any).code === 'P2002') {
+        throw TeamMemberErrors.emailAlreadyExists();
       }
-    });
+      throw TeamMemberErrors.failedToUpdate();
+    }
   }
 
   async remove(id: string) {

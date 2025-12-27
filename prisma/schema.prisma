@@ -200,7 +200,7 @@ model StoreConfiguration {
 
 model SocialMedia {
   id       String  @id @default(uuid())
-  platform String
+  platform String  @unique
   url      String
   isActive Boolean @default(true)
 

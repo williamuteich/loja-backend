@@ -29,6 +29,9 @@ export class SocialService {
 
       return socialMedia;
     } catch (error) {
+      if ((error as any).code === 'P2002') {
+        throw SocialMediaErrors.alreadyExists();
+      }
       throw SocialMediaErrors.failedToCreate();
     }
   }
@@ -64,6 +67,9 @@ export class SocialService {
 
       return updated;
     } catch (error) {
+      if ((error as any).code === 'P2002') {
+        throw SocialMediaErrors.alreadyExists();
+      }
       throw SocialMediaErrors.failedToUpdate();
     }
   }

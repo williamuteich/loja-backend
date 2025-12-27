@@ -16,23 +16,29 @@ export class ClientService {
 
     async create(createClientDto: CreateClientDto) {
         const hashedPassword = await this.hashService.hash(createClientDto.password);
-
-        return await this.prisma.client.create({
-            data: {
-                ...createClientDto,
-                password: hashedPassword,
-                role: Role.CLIENT,
-            },
-            select: {
-                id: true,
-                name: true,
-                lastName: true,
-                email: true,
-                role: true,
-                createdAt: true,
-                updatedAt: true
+        try {
+            return await this.prisma.client.create({
+                data: {
+                    ...createClientDto,
+                    password: hashedPassword,
+                    role: Role.CLIENT,
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    lastName: true,
+                    email: true,
+                    role: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
+            });
+        } catch (error) {
+            if ((error as any).code === 'P2002') {
+                throw ClientErrors.emailAlreadyExists();
             }
-        });
+            throw ClientErrors.failedToCreate();
+        }
     }
 
     async findAll(skip: number = 0, take: number = 10) {
@@ -85,19 +91,26 @@ export class ClientService {
             throw ClientErrors.notFound(id);
         }
 
-        return await this.prisma.client.update({
-            where: { id },
-            data: updateClientDto,
-            select: {
-                id: true,
-                name: true,
-                lastName: true,
-                email: true,
-                role: true,
-                createdAt: true,
-                updatedAt: true
+        try {
+            return await this.prisma.client.update({
+                where: { id },
+                data: updateClientDto,
+                select: {
+                    id: true,
+                    name: true,
+                    lastName: true,
+                    email: true,
+                    role: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
+            });
+        } catch (error) {
+            if ((error as any).code === 'P2002') {
+                throw ClientErrors.emailAlreadyExists();
             }
-        });
+            throw ClientErrors.failedToUpdate();
+        }
     }
 
     async remove(id: string) {

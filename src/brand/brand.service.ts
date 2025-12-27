@@ -9,9 +9,16 @@ export class BrandService {
     constructor(private readonly prisma: PrismaService) { }
 
     async create(createBrandDto: CreateBrandDto) {
-        return await this.prisma.brand.create({
-            data: createBrandDto,
-        });
+        try {
+            return await this.prisma.brand.create({
+                data: createBrandDto,
+            });
+        } catch (error) {
+            if ((error as any).code === 'P2002') {
+                throw BrandErrors.nameAlreadyExists();
+            }
+            throw BrandErrors.failedToCreate();
+        }
     }
 
     async findAll(skip: number = 0, take: number = 10) {
@@ -67,17 +74,24 @@ export class BrandService {
             throw BrandErrors.notFound(id);
         }
 
-        return await this.prisma.brand.update({
-            where: { id },
-            data: updateBrandDto,
-            include: {
-                _count: {
-                    select: {
-                        products: true,
+        try {
+            return await this.prisma.brand.update({
+                where: { id },
+                data: updateBrandDto,
+                include: {
+                    _count: {
+                        select: {
+                            products: true,
+                        },
                     },
                 },
-            },
-        });
+            });
+        } catch (error) {
+            if ((error as any).code === 'P2002') {
+                throw BrandErrors.nameAlreadyExists();
+            }
+            throw BrandErrors.failedToUpdate();
+        }
     }
 
     async remove(id: string) {
