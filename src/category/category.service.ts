@@ -117,11 +117,15 @@ export class CategoryService {
     async remove(id: string) {
         const existing = await this.prisma.category.findUnique({
             where: { id },
-            select: { id: true },
+            select: { id: true, imageUrl: true },
         });
 
         if (!existing) {
             throw CategoryErrors.notFound(id);
+        }
+
+        if (existing.imageUrl) {
+            await this.fileStorageService.delete(existing.imageUrl);
         }
 
         return await this.prisma.category.delete({

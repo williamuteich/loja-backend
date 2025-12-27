@@ -121,11 +121,19 @@ export class BannerService {
   async remove(id: string) {
     const existing = await this.prisma.banner.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, imageDesktop: true, imageMobile: true },
     });
 
     if (!existing) {
       throw BannerErrors.notFound(id);
+    }
+
+    if (existing.imageDesktop) {
+      await this.fileStorage.delete(existing.imageDesktop);
+    }
+
+    if (existing.imageMobile) {
+      await this.fileStorage.delete(existing.imageMobile);
     }
 
     return await this.prisma.banner.delete({
