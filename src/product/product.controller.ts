@@ -4,10 +4,11 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { ProductQueryDto } from './dto/product-query.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from 'src/generated/prisma/enums';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheTTL } from '@nestjs/cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.interceptor';
@@ -68,11 +69,11 @@ export class ProductController {
   @CacheTTL(24 * 60 * 60 * 1000)
   @ApiOperation({ summary: 'Get all active products (public)' })
   @ApiResponse({ status: 200, description: 'Return all active products' })
-  @ApiQuery({ name: 'skip', required: false, type: Number })
-  @ApiQuery({ name: 'take', required: false, type: Number })
-  findAllPublic(@Query() query: PaginationQueryDto) {
-    const { skip = 0, take = 10 } = query;
-    return this.productService.findAllPublic(skip, take);
+  @ApiQuery({ name: 'category', required: false, type: String })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  findAllPublic(@Query() query: ProductQueryDto) {
+    const { skip = 0, take = 10, category, search } = query;
+    return this.productService.findAllPublic(skip, take, category, search);
   }
 
   @Get('admin')

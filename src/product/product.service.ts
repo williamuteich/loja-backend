@@ -76,23 +76,59 @@ export class ProductService {
     });
   }
 
-  async findAllPublic(skip: number = 0, take: number = 10) {
-    return this.prisma.product.findMany({
-      where: {
-        isActive: true,
-      },
-      skip,
-      take,
-      include: {
-        variants: true,
-        images: true,
-        categories: {
-          include: { category: true },
+  async findAllPublic(
+    skip: number = 0,
+    take: number = 10,
+    categoryName?: string,
+    searchTerm?: string,
+  ) {
+    const where: any = {
+      isActive: true,
+    };
+
+    if (categoryName) {
+      where.categories = {
+        some: {
+          category: {
+            name: categoryName,
+          },
         },
-        brand: true,
+      };
+    }
+
+    if (searchTerm) {
+      where.OR = [
+        { title: { contains: searchTerm } },
+        { description: { contains: searchTerm } },
+      ];
+    }
+
+    const [total, data] = await Promise.all([
+      this.prisma.product.count({ where }),
+      this.prisma.product.findMany({
+        where,
+        skip,
+        take,
+        include: {
+          variants: true,
+          images: true,
+          categories: {
+            include: { category: true },
+          },
+          brand: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        skip,
+        take,
       },
-      orderBy: { createdAt: 'desc' },
-    });
+    };
   }
 
   async findOne(id: string) {
