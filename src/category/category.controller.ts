@@ -51,7 +51,6 @@ export class CategoryController {
 
     @Get('public')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheKey('categories_public')
     @CacheTTL(24 * 60 * 60 * 1000)
     @ApiOperation({ summary: 'Get all active categories (public)' })
     @ApiResponse({ status: 200, description: 'Return all active categories' })
@@ -64,7 +63,6 @@ export class CategoryController {
 
     @Get('public/home')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheKey('categories_public_home')
     @CacheTTL(24 * 60 * 60 * 1000)
     @ApiOperation({ summary: 'Get all active categories flagged to show on home (public)' })
     @ApiResponse({ status: 200, description: 'Return all active categories with isHome=true' })
@@ -76,9 +74,8 @@ export class CategoryController {
     }
 
     @Get('admin')
-    //@UseInterceptors(LoggingCacheInterceptor)
-    //@CacheKey('categories_all')
-    //@CacheTTL(24 * 60 * 60 * 1000) 
+    @UseInterceptors(LoggingCacheInterceptor)
+    @CacheTTL(24 * 60 * 60 * 1000) 
     @ApiOperation({ summary: 'Get all categories (admin)' })
     @ApiResponse({ status: 200, description: 'Return all categories (admin)' })
     @ApiQuery({ name: 'skip', required: false, type: Number })

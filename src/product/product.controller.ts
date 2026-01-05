@@ -65,7 +65,6 @@ export class ProductController {
 
   @Get('public')
   @UseInterceptors(LoggingCacheInterceptor)
-  @CacheKey('products_public')
   @CacheTTL(24 * 60 * 60 * 1000)
   @ApiOperation({ summary: 'Get all active products (public)' })
   @ApiResponse({ status: 200, description: 'Return all active products' })
@@ -78,8 +77,7 @@ export class ProductController {
 
   @Get('admin')
   @UseInterceptors(LoggingCacheInterceptor)
-  //@CacheKey('products_all')
-  //@CacheTTL(24 * 60 * 60 * 1000)
+  @CacheTTL(24 * 60 * 60 * 1000)
   @ApiOperation({ summary: 'Get all products (admin)' })
   @ApiResponse({ status: 200, description: 'Return all products (admin)' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
