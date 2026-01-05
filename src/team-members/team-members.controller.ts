@@ -32,9 +32,9 @@ export class TeamMembersController {
 
   @Get('admin')
   @Auth(Role.ADMIN, Role.COLLABORATOR)
-  @UseInterceptors(LoggingCacheInterceptor)
-  @CacheKey('team_members_all')
-  @CacheTTL(3600000)
+  //@UseInterceptors(LoggingCacheInterceptor)
+  //@CacheKey('team_members_all')
+  //@CacheTTL(3600000)
   @ApiOperation({ summary: 'Get all team members (ADMIN/COLLABORATOR only)' })
   @ApiResponse({ status: 200, description: 'Return all team members' })
   @ApiQuery({ name: 'skip', required: false, type: Number })

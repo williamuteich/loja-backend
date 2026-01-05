@@ -45,9 +45,9 @@ export class BrandController {
     }
 
     @Get('admin')
-    @UseInterceptors(LoggingCacheInterceptor)
-    @CacheKey('brands_all')
-    @CacheTTL(24 * 60 * 60 * 1000)
+    //@UseInterceptors(LoggingCacheInterceptor)
+    //@CacheKey('brands_all')
+    //@CacheTTL(24 * 60 * 60 * 1000)
     @ApiOperation({ summary: 'Get all brands (admin)' })
     @ApiResponse({ status: 200, description: 'Return all brands (admin)' })
     @ApiQuery({ name: 'skip', required: false, type: Number })

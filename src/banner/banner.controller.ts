@@ -86,9 +86,9 @@ export class BannerController {
   }
 
   @Get('admin')
-  @UseInterceptors(LoggingCacheInterceptor)
-  @CacheKey('banners_all')
-  @CacheTTL(3600000)
+  //@UseInterceptors(LoggingCacheInterceptor)
+  //@CacheKey('banners_all')
+  //@CacheTTL(3600000)
   @ApiOperation({ summary: 'Get all banners (admin)' })
   @ApiResponse({ status: 200, description: 'Return all banners (admin)' })
   @ApiQuery({ name: 'skip', required: false, type: Number })

@@ -76,9 +76,9 @@ export class CategoryController {
     }
 
     @Get('admin')
-    @UseInterceptors(LoggingCacheInterceptor)
-    @CacheKey('categories_all')
-    @CacheTTL(24 * 60 * 60 * 1000) 
+    //@UseInterceptors(LoggingCacheInterceptor)
+    //@CacheKey('categories_all')
+    //@CacheTTL(24 * 60 * 60 * 1000) 
     @ApiOperation({ summary: 'Get all categories (admin)' })
     @ApiResponse({ status: 200, description: 'Return all categories (admin)' })
     @ApiQuery({ name: 'skip', required: false, type: Number })

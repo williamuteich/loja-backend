@@ -25,9 +25,9 @@ export class NewsletterController {
 
   @Get('admin')
   @Auth(Role.ADMIN, Role.COLLABORATOR)
-  @UseInterceptors(LoggingCacheInterceptor)
-  @CacheKey('newsletters_all')
-  @CacheTTL(3600000)
+  //@UseInterceptors(LoggingCacheInterceptor)
+  //@CacheKey('newsletters_all')
+  //@CacheTTL(3600000)
   findAll(@Query() query: PaginationQueryDto) {
     const { skip = 0, take = 10 } = query;
     return this.newsletterService.findAll(skip, take);

@@ -36,7 +36,6 @@ async function main() {
   if (!existingConfig) {
     await prisma.storeConfiguration.create({
       data: {
-        isActive: true,
         maintenanceMode: false,
         maintenanceMessage: 'Estamos em manutenção. Voltamos em breve!',
 
