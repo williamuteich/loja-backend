@@ -29,6 +29,14 @@ export class SocialController {
     return result;
   }
 
+  @Get('admin')
+  @Auth(Role.ADMIN)
+  @ApiOperation({ summary: 'Get all social media links (admin)' })
+  @ApiResponse({ status: 200, description: 'Return all social media links' })
+  findAllAdmin() {
+    return this.socialService.findAll();
+  }
+
   @Get('public')
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheKey('social_media_all')
