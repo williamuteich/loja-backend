@@ -24,7 +24,6 @@ export class SocialController {
   @ApiResponse({ status: 404, description: 'Store configuration not found' })
   async create(@Body() createSocialDto: CreateSocialDto) {
     const result = await this.socialService.create(createSocialDto);
-    await this.cacheManager.del('social_media_all');
     await this.cacheManager.del('store_config_current');
     return result;
   }
@@ -39,15 +38,15 @@ export class SocialController {
 
   @Get('public')
   @UseInterceptors(LoggingCacheInterceptor)
-  @CacheKey('social_media_all')
-  @CacheTTL(30 * 24 * 60 * 60 * 1000)
+  @CacheTTL(3600000)
   @ApiOperation({ summary: 'Get all social media links' })
   findAll() {
     return this.socialService.findAll();
   }
 
   @Get('public/:id')
-  @CacheTTL(30 * 24 * 60 * 60 * 1000)
+  @UseInterceptors(LoggingCacheInterceptor)
+  @CacheTTL(3600000)
   @ApiOperation({ summary: 'Get a social media link by ID' })
   @ApiResponse({ status: 200, description: 'Return the social media link' })
   @ApiResponse({ status: 404, description: 'Social media not found' })

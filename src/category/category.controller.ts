@@ -44,14 +44,13 @@ export class CategoryController {
         @UploadedFile() file?: Express.Multer.File,
     ) {
         const result = await this.categoryService.create(createCategoryDto, file);
-        await this.cacheManager.del('categories_all');
         await this.cacheManager.del('categories_public');
         return result;
     }
 
     @Get('public')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheTTL(24 * 60 * 60 * 1000)
+    @CacheTTL(300000)
     @ApiOperation({ summary: 'Get all active categories (public)' })
     @ApiResponse({ status: 200, description: 'Return all active categories' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -63,7 +62,7 @@ export class CategoryController {
 
     @Get('public/home')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheTTL(24 * 60 * 60 * 1000)
+    @CacheTTL(300000)
     @ApiOperation({ summary: 'Get all active categories flagged to show on home (public)' })
     @ApiResponse({ status: 200, description: 'Return all active categories with isHome=true' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -74,8 +73,6 @@ export class CategoryController {
     }
 
     @Get('admin')
-    @UseInterceptors(LoggingCacheInterceptor)
-    @CacheTTL(24 * 60 * 60 * 1000) 
     @ApiOperation({ summary: 'Get all categories (admin)' })
     @ApiResponse({ status: 200, description: 'Return all categories (admin)' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -88,7 +85,7 @@ export class CategoryController {
 
     @Get('public/:id')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheTTL(24 * 60 * 60 * 1000)
+    @CacheTTL(300000)
     @ApiOperation({ summary: 'Get a category by ID (public)' })
     @ApiResponse({ status: 200, description: 'Return the category' })
     @ApiResponse({ status: 404, description: 'Category not found' })
@@ -105,9 +102,8 @@ export class CategoryController {
     @ApiParam({ name: 'id', description: 'Category ID' })
     async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
         const result = await this.categoryService.update(id, updateCategoryDto);
-        await this.cacheManager.del('categories_all');
         await this.cacheManager.del('categories_public');
-        await this.cacheManager.del(`/category/${id}`);
+        await this.cacheManager.del(`/category/public/${id}`);
         return result;
     }
 
@@ -119,9 +115,8 @@ export class CategoryController {
     @ApiParam({ name: 'id', description: 'Category ID' })
     async remove(@Param('id') id: string) {
         const result = await this.categoryService.remove(id);
-        await this.cacheManager.del('categories_all');
         await this.cacheManager.del('categories_public');
-        await this.cacheManager.del(`/category/${id}`);
+        await this.cacheManager.del(`/category/public/${id}`);
         return result;
     }
 
@@ -146,9 +141,8 @@ export class CategoryController {
     @ApiParam({ name: 'id', description: 'Category ID' })
     async uploadImage(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
         const result = await this.categoryService.updateImage(id, file);
-        await this.cacheManager.del('categories_all');
         await this.cacheManager.del('categories_public');
-        await this.cacheManager.del(`/category/${id}`);
+        await this.cacheManager.del(`/category/public/${id}`);
         return result;
     }
 }

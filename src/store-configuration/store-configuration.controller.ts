@@ -19,7 +19,7 @@ export class StoreConfigurationController {
   @Get('public')
   @UseInterceptors(LoggingCacheInterceptor)
   @CacheKey('store_config_current')
-  @CacheTTL(30 * 24 * 60 * 60 * 1000) 
+  @CacheTTL(3600000)
   @ApiOperation({ summary: 'Get current store configuration (public)' })
   @ApiResponse({ status: 200, description: 'Store configuration retrieved successfully' })
   async getCurrent() {

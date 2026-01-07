@@ -26,15 +26,13 @@ export class BrandController {
     @ApiResponse({ status: 409, description: 'Brand name already exists' })
     async create(@Body() createBrandDto: CreateBrandDto) {
         const result = await this.brandService.create(createBrandDto);
-        await this.cacheManager.del('brands_all');
         await this.cacheManager.del('brands_public');
         return result;
     }
 
     @Get('public')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheKey('brands_public')
-    @CacheTTL(24 * 60 * 60 * 1000)
+    @CacheTTL(300000)
     @ApiOperation({ summary: 'Get all active brands (public)' })
     @ApiResponse({ status: 200, description: 'Return all active brands' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -60,7 +58,7 @@ export class BrandController {
 
     @Get('public/:id')
     @UseInterceptors(LoggingCacheInterceptor)
-    @CacheTTL(24 * 60 * 60 * 1000)
+    @CacheTTL(21600000)
     @ApiOperation({ summary: 'Get a brand by ID (public)' })
     @ApiResponse({ status: 200, description: 'Return the brand' })
     @ApiResponse({ status: 404, description: 'Brand not found' })
@@ -77,9 +75,8 @@ export class BrandController {
     @ApiParam({ name: 'id', description: 'Brand ID' })
     async update(@Param('id') id: string, @Body() updateBrandDto: UpdateBrandDto) {
         const result = await this.brandService.update(id, updateBrandDto);
-        await this.cacheManager.del('brands_all');
         await this.cacheManager.del('brands_public');
-        await this.cacheManager.del(`/brand/${id}`);
+        await this.cacheManager.del(`/brand/public/${id}`);
         return result;
     }
 
@@ -91,9 +88,8 @@ export class BrandController {
     @ApiParam({ name: 'id', description: 'Brand ID' })
     async remove(@Param('id') id: string) {
         const result = await this.brandService.remove(id);
-        await this.cacheManager.del('brands_all');
         await this.cacheManager.del('brands_public');
-        await this.cacheManager.del(`/brand/${id}`);
+        await this.cacheManager.del(`/brand/public/${id}`);
         return result;
     }
 }

@@ -66,7 +66,7 @@ export class ProductController {
 
   @Get('public')
   @UseInterceptors(LoggingCacheInterceptor)
-  @CacheTTL(24 * 60 * 60 * 1000)
+  @CacheTTL(300000)
   @ApiOperation({ summary: 'Get all active products (public)' })
   @ApiResponse({ status: 200, description: 'Return all active products' })
   @ApiQuery({ name: 'category', required: false, type: String })
@@ -77,8 +77,6 @@ export class ProductController {
   }
 
   @Get('admin')
-  @UseInterceptors(LoggingCacheInterceptor)
-  @CacheTTL(24 * 60 * 60 * 1000)
   @ApiOperation({ summary: 'Get all products (admin)' })
   @ApiResponse({ status: 200, description: 'Return all products (admin)' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -91,7 +89,7 @@ export class ProductController {
 
   @Get('public/:id')
   @UseInterceptors(LoggingCacheInterceptor)
-  @CacheTTL(24 * 60 * 60 * 1000)
+  @CacheTTL(300000)
   @ApiOperation({ summary: 'Get a product by ID (public)' })
   @ApiResponse({ status: 200, description: 'Return the product' })
   @ApiResponse({ status: 404, description: 'Product not found' })
@@ -103,7 +101,7 @@ export class ProductController {
 
   @Get('public/:id/related')
   @UseInterceptors(LoggingCacheInterceptor)
-  @CacheTTL(24 * 60 * 60 * 1000)
+  @CacheTTL(300000)
   @ApiOperation({ summary: 'Get related products (public)' })
   @ApiResponse({ status: 200, description: 'Return related products' })
   @ApiResponse({ status: 404, description: 'Product not found' })
@@ -154,7 +152,7 @@ export class ProductController {
     const result = await this.productService.update(id, updateProductDto, files);
     await this.cacheManager.del('products_all');
     await this.cacheManager.del('products_public');
-    await this.cacheManager.del(`/product/${id}`);
+    await this.cacheManager.del(`/product/public/${id}`);
     return result;
   }
 
@@ -168,7 +166,7 @@ export class ProductController {
     const result = await this.productService.remove(id);
     await this.cacheManager.del('products_all');
     await this.cacheManager.del('products_public');
-    await this.cacheManager.del(`/product/${id}`);
+    await this.cacheManager.del(`/product/public/${id}`);
     return result;
   }
 }

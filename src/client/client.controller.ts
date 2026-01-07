@@ -26,15 +26,11 @@ export class ClientController {
     @ApiResponse({ status: 400, description: 'Bad request.' })
     async create(@Body() createClientDto: CreateClientDto) {
         const result = await this.clientService.create(createClientDto);
-        await this.cacheManager.del('clients_all');
         return result;
     }
 
     @Get('admin')
     @Auth(Role.ADMIN, Role.COLLABORATOR)
-    @UseInterceptors(LoggingCacheInterceptor)
-    //@CacheKey('clients_all')
-    //@CacheTTL(3600000)
     @ApiOperation({ summary: 'Get all clients (ADMIN/COLLABORATOR only)' })
     @ApiResponse({ status: 200, description: 'Return all clients.' })
     @ApiQuery({ name: 'skip', required: false, type: Number, description: 'Number of records to skip' })
@@ -46,8 +42,6 @@ export class ClientController {
 
     @Get('admin/:id')
     @Auth(Role.ADMIN, Role.COLLABORATOR, Role.CLIENT)
-    @UseInterceptors(LoggingCacheInterceptor)
-    @CacheTTL(3600000)
     @ApiOperation({ summary: 'Get a client by ID (team members or own data)' })
     @ApiResponse({ status: 200, description: 'Return the client.' })
     @ApiResponse({ status: 404, description: 'Client not found.' })
@@ -70,8 +64,7 @@ export class ClientController {
             throw new ForbiddenException('You can only update your own data');
         }
         const result = await this.clientService.update(id, updateClientDto);
-        await this.cacheManager.del('clients_all');
-        await this.cacheManager.del(`/client/${id}`);
+        await this.cacheManager.del(`/client/admin/${id}`);
         return result;
     }
 
@@ -83,8 +76,7 @@ export class ClientController {
     @ApiParam({ name: 'id', description: 'Client ID' })
     async remove(@Param('id') id: string) {
         const result = await this.clientService.remove(id);
-        await this.cacheManager.del('clients_all');
-        await this.cacheManager.del(`/client/${id}`);
+        await this.cacheManager.del(`/client/admin/${id}`);
         return result;
     }
 }

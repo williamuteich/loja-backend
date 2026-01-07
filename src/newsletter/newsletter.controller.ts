@@ -14,7 +14,7 @@ export class NewsletterController {
   constructor(
     private readonly newsletterService: NewsletterService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+  ) { }
 
   @Post('public')
   async create(@Body() createNewsletterDto: CreateNewsletterDto) {
@@ -25,9 +25,6 @@ export class NewsletterController {
 
   @Get('admin')
   @Auth(Role.ADMIN, Role.COLLABORATOR)
-  //@UseInterceptors(LoggingCacheInterceptor)
-  //@CacheKey('newsletters_all')
-  //@CacheTTL(3600000)
   findAll(@Query() query: PaginationQueryDto) {
     const { skip = 0, take = 10 } = query;
     return this.newsletterService.findAll(skip, take);
@@ -35,8 +32,6 @@ export class NewsletterController {
 
   @Get('admin/:id')
   @Auth(Role.ADMIN, Role.COLLABORATOR)
-  @UseInterceptors(LoggingCacheInterceptor)
-  @CacheTTL(3600000)
   findOne(@Param('id') id: string) {
     return this.newsletterService.findOne(id);
   }

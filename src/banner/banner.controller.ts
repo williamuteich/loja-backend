@@ -1,13 +1,13 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Patch, 
-  Param, 
-  Delete, 
-  Query, 
-  UploadedFiles, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UploadedFiles,
   UseInterceptors,
   Inject
 } from '@nestjs/common';
@@ -28,7 +28,7 @@ export class BannerController {
   constructor(
     private readonly bannerService: BannerService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+  ) { }
 
   @Post('admin')
   @Auth(Role.ADMIN)
@@ -67,15 +67,13 @@ export class BannerController {
     @UploadedFiles() files: { desktopImage?: Express.Multer.File[], mobileImage?: Express.Multer.File[] },
   ) {
     const result = this.bannerService.create(createBannerDto, files);
-    this.cacheManager.del('banners_all');
     this.cacheManager.del('banners_public');
     return result;
   }
 
   @Get('public')
   @UseInterceptors(LoggingCacheInterceptor)
-  @CacheKey('banners_public')
-  @CacheTTL(3600000)
+  @CacheTTL(21600000)
   @ApiOperation({ summary: 'Get all active banners (public)' })
   @ApiResponse({ status: 200, description: 'Return all active banners' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -86,9 +84,6 @@ export class BannerController {
   }
 
   @Get('admin')
-  //@UseInterceptors(LoggingCacheInterceptor)
-  //@CacheKey('banners_all')
-  //@CacheTTL(3600000)
   @ApiOperation({ summary: 'Get all banners (admin)' })
   @ApiResponse({ status: 200, description: 'Return all banners (admin)' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
@@ -101,7 +96,7 @@ export class BannerController {
 
   @Get('public/:id')
   @UseInterceptors(LoggingCacheInterceptor)
-  @CacheTTL(3600000)
+  @CacheTTL(21600000)
   @ApiOperation({ summary: 'Get a banner by ID (public)' })
   @ApiResponse({ status: 200, description: 'Return the banner' })
   @ApiResponse({ status: 404, description: 'Banner not found' })
