@@ -24,8 +24,18 @@ export class NewsletterService {
     });
   }
 
-  async findAll(skip: number = 0, take: number = 10) {
+  async findAll(skip: number = 0, take: number = 10, search?: string) {
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { email: { contains: search } },
+        { whatsapp: { contains: search } },
+      ];
+    }
+
     return this.prisma.newsletter.findMany({
+      where,
       skip,
       take,
       orderBy: { createdAt: 'desc' },
@@ -34,7 +44,7 @@ export class NewsletterService {
 
   async findOne(id: string) {
     const newsletter = await this.prisma.newsletter.findUnique({
-      where: { id },  
+      where: { id },
     })
 
     if (!newsletter) {

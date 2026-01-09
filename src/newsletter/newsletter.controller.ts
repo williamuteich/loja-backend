@@ -8,7 +8,9 @@ import { Cache } from 'cache-manager';
 import { LoggingCacheInterceptor } from '../common/interceptors/logging-cache.interceptor';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from 'src/generated/prisma/enums';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 
+@ApiTags('newsletter')
 @Controller('newsletter')
 export class NewsletterController {
   constructor(
@@ -25,9 +27,14 @@ export class NewsletterController {
 
   @Get('admin')
   @Auth(Role.ADMIN, Role.COLLABORATOR)
+  @ApiOperation({ summary: 'Get all newsletter subscriptions (admin)' })
+  @ApiResponse({ status: 200, description: 'Return all newsletter subscriptions' })
+  @ApiQuery({ name: 'skip', required: false, type: Number })
+  @ApiQuery({ name: 'take', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search term for email or whatsapp' })
   findAll(@Query() query: PaginationQueryDto) {
-    const { skip = 0, take = 10 } = query;
-    return this.newsletterService.findAll(skip, take);
+    const { skip = 0, take = 10, search } = query;
+    return this.newsletterService.findAll(skip, take, search);
   }
 
   @Get('admin/:id')
