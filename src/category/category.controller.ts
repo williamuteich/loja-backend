@@ -77,10 +77,11 @@ export class CategoryController {
     @ApiResponse({ status: 200, description: 'Return all categories (admin)' })
     @ApiQuery({ name: 'skip', required: false, type: Number })
     @ApiQuery({ name: 'take', required: false, type: Number })
+    @ApiQuery({ name: 'search', required: false, type: String, description: 'Search term for category name' })
     @Auth(Role.ADMIN, Role.COLLABORATOR)
     findAll(@Query() query: PaginationQueryDto) {
-        const { skip = 0, take = 10 } = query;
-        return this.categoryService.findAll(skip, take);
+        const { skip = 0, take = 10, search } = query;
+        return this.categoryService.findAll(skip, take, search);
     }
 
     @Get('public/:id')

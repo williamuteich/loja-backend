@@ -39,8 +39,18 @@ export class TeamMembersService {
     }
   }
 
-  async findAll(skip: number = 0, take: number = 10) {
+  async findAll(skip: number = 0, take: number = 10, search?: string) {
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { lastName: { contains: search } },
+      ];
+    }
+
     return await this.prisma.team.findMany({
+      where,
       skip,
       take,
       select: {

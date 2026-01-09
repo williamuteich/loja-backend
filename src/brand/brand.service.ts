@@ -21,8 +21,15 @@ export class BrandService {
         }
     }
 
-    async findAll(skip: number = 0, take: number = 10) {
+    async findAll(skip: number = 0, take: number = 10, search?: string) {
+        const where: any = {};
+
+        if (search) {
+            where.name = { contains: search };
+        }
+
         return await this.prisma.brand.findMany({
+            where,
             skip,
             take,
             include: {

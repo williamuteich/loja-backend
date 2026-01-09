@@ -41,11 +41,20 @@ export class ClientService {
         }
     }
 
-    async findAll(skip: number = 0, take: number = 10) {
+    async findAll(skip: number = 0, take: number = 10, search?: string) {
+        const where: any = {
+            role: Role.CLIENT,
+        };
+
+        if (search) {
+            where.OR = [
+                { name: { contains: search } },
+                { lastName: { contains: search } },
+            ];
+        }
+
         return await this.prisma.client.findMany({
-            where: {
-                role: Role.CLIENT,
-            },
+            where,
             skip,
             take,
             select: {

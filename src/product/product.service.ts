@@ -60,8 +60,18 @@ export class ProductService {
     });
   }
 
-  async findAll(skip: number = 0, take: number = 10) {
+  async findAll(skip: number = 0, take: number = 10, search?: string) {
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search } },
+        { description: { contains: search } },
+      ];
+    }
+
     return this.prisma.product.findMany({
+      where,
       skip,
       take,
       include: {

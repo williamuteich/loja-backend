@@ -52,8 +52,15 @@ export class CategoryService {
         });
     }
 
-    async findAll(skip: number = 0, take: number = 10) {
+    async findAll(skip: number = 0, take: number = 10, search?: string) {
+        const where: any = {};
+
+        if (search) {
+            where.name = { contains: search };
+        }
+
         return await this.prisma.category.findMany({
+            where,
             skip,
             take,
             include: {

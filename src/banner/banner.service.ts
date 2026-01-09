@@ -32,8 +32,15 @@ export class BannerService {
     });
   }
 
-  async findAll(skip: number = 0, take: number = 10) {
+  async findAll(skip: number = 0, take: number = 10, search?: string) {
+    const where: any = {};
+
+    if (search) {
+      where.title = { contains: search };
+    }
+
     return await this.prisma.banner.findMany({
+      where,
       skip,
       take,
       orderBy: { createdAt: 'desc' },

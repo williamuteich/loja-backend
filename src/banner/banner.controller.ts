@@ -88,10 +88,11 @@ export class BannerController {
   @ApiResponse({ status: 200, description: 'Return all banners (admin)' })
   @ApiQuery({ name: 'skip', required: false, type: Number })
   @ApiQuery({ name: 'take', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search term for banner title' })
   @Auth(Role.ADMIN, Role.COLLABORATOR)
   findAll(@Query() query: PaginationQueryDto) {
-    const { skip = 0, take = 10 } = query;
-    return this.bannerService.findAll(skip, take);
+    const { skip = 0, take = 10, search } = query;
+    return this.bannerService.findAll(skip, take, search);
   }
 
   @Get('public/:id')

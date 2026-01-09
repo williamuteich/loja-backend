@@ -35,9 +35,10 @@ export class ClientController {
     @ApiResponse({ status: 200, description: 'Return all clients.' })
     @ApiQuery({ name: 'skip', required: false, type: Number, description: 'Number of records to skip' })
     @ApiQuery({ name: 'take', required: false, type: Number, description: 'Number of records to take' })
+    @ApiQuery({ name: 'search', required: false, type: String, description: 'Search term for client name' })
     findAll(@Query() query: PaginationQueryDto) {
-        const { skip = 0, take = 10 } = query;
-        return this.clientService.findAll(skip, take);
+        const { skip = 0, take = 10, search } = query;
+        return this.clientService.findAll(skip, take, search);
     }
 
     @Get('admin/:id')
