@@ -57,6 +57,14 @@ export class BrandController {
         return this.brandService.findAll(skip, take, search);
     }
 
+    @Get('admin/all')
+    @ApiOperation({ summary: 'Get all brands without pagination (admin)' })
+    @ApiResponse({ status: 200, description: 'Return all brands' })
+    @Auth(Role.ADMIN, Role.COLLABORATOR)
+    findAllAll() {
+        return this.brandService.findAllAll();
+    }
+
     @Get('public/:id')
     @UseInterceptors(LoggingCacheInterceptor)
     @CacheTTL(21600000)

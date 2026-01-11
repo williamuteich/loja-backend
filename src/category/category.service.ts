@@ -90,6 +90,21 @@ export class CategoryService {
         });
     }
 
+    async findAllAll() {
+        return await this.prisma.category.findMany({
+            orderBy: {
+                name: 'asc',
+            },
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
+        });
+    }
+
     async findOne(id: string) {
         const category = await this.prisma.category.findUnique({
             where: { id },
@@ -115,7 +130,6 @@ export class CategoryService {
         try {
             return await this.prisma.category.update({
                 where: { id },
-                // DTO e Prisma agora usam o mesmo nome de campo: isHome
                 data: {
                     ...updateCategoryDto,
                 },

@@ -59,6 +59,21 @@ export class BrandService {
         });
     }
 
+    async findAllAll() {
+        return await this.prisma.brand.findMany({
+            orderBy: {
+                name: 'asc',
+            },
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
+        });
+    }
+
     async findOne(id: string) {
         const brand = await this.prisma.brand.findUnique({
             where: { id },

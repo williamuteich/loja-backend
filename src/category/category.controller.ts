@@ -84,6 +84,14 @@ export class CategoryController {
         return this.categoryService.findAll(skip, take, search);
     }
 
+    @Get('admin/all')
+    @ApiOperation({ summary: 'Get all categories without pagination (admin)' })
+    @ApiResponse({ status: 200, description: 'Return all categories' })
+    @Auth(Role.ADMIN, Role.COLLABORATOR)
+    findAllAll() {
+        return this.categoryService.findAllAll();
+    }
+
     @Get('public/:id')
     @UseInterceptors(LoggingCacheInterceptor)
     @CacheTTL(300000)
